@@ -106,6 +106,28 @@ if(! function_exists("pdo")){
     }
 }
 
+if(! function_exists("add_sql_log")){
+    /** (Any) returns the value of the get */
+    function add_sql_log(string $string, $type = "info"){
+        $arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1","2","3", "4", "5", "6", "7", "8", "9"];
+        shuffle($arr);
+        $mx = $arr[0].$arr[1].$arr[2].$arr[3].$arr[4];
+
+        if($type=="info"){
+        $logfile = "_backend/logs/sql_logs/".date("Y-m-d-sql").".log"; // Path to your log file
+        $timestamp = date('Y-m-d H:i:s');
+        $logEntry = "INFO: ($mx) [$timestamp] $string\n";
+        file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+        }
+        if($type=="error"){
+            $logfile = "_backend/logs/sql_errors/".date("Y-m-d-sql").".log"; // Path to your log file
+            $timestamp = date('Y-m-d H:i:s');
+            $logEntry = "ERROR: ($mx) [$timestamp] $string\n";
+            file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+        }
+    }
+}
+
 if (!function_exists('execute_select')) {
     /**
      * Executes a SELECT query and returns a structured response.
@@ -135,7 +157,23 @@ if (!function_exists('execute_select')) {
 
             $stmt->execute();
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+            $count =$stmt->rowCount();
+            $lastquery = $stmt->queryString;
+            $stmt->closeCursor();
+            $stmt = null;
+            if(getenv('sql_logs')=="true"){
+                $toret = json_encode([
+                    "code" => getenv('success_code'),
+                    "status" => "success",
+                    "message" => "Query executed successfully",
+                    "isempty"=> empty($results) ? true : false,
+                    "hasresults"=> !empty($results) ? true : false,
+                    "rowcount" => $count,
+                    "lastquery" => $lastquery,
+                    "data" => $results,
+                ]);
+                add_sql_log("(SUCCESS) ".$toret, "info");
+            }
             return [
                 "code" => getenv('success_code'),
                 "status" => "success",
@@ -143,16 +181,18 @@ if (!function_exists('execute_select')) {
                 "data" => $results,
                 "isempty"=> empty($results) ? true : false,
                 "hasresults"=> !empty($results) ? true : false,
-                "rowcount" => $stmt->rowCount(),
-                "lastquery" => $stmt->queryString
+                "rowcount" => $count,
+                "lastquery" => $lastquery
             ];
 
         } catch (PDOException $e) {
-            return [
+            $err =  [
                 "code" => getenv('error_code'),
                 "status" => "error",
                 "message" => "Database error: " . $e->getMessage()
             ];
+            add_sql_log("(ERROR) ".json_encode($err), "error");
+            return $err;
         }
     }
 }
@@ -198,25 +238,25 @@ if (!function_exists('execute_query')) {
                 $stmt->execute();
     
                 $verb = strtoupper(strtok(ltrim($sql), " \n\t("));
-    
+                $rett = [];
                 switch ($verb) {
                     case 'SELECT':
                     case 'SHOW':
                     case 'DESCRIBE':
                     case 'PRAGMA':
-                        return [
+                        $rett =  [
                             "code" => getenv('success_code'),
                             "status" => "success",
                             "message" => "Query executed successfully",
-                            "data" => $stmt->fetchAll(PDO::FETCH_ASSOC),
                             "rowcount" => $stmt->rowCount(),
                             "lastquery" => $stmt->queryString,
                             "hasresults"=> $stmt->rowCount() > 0 ? true : false,
-                            "isempty"=> $stmt->rowCount() == 0 ? true : false
-                        ];
+                            "isempty"=> $stmt->rowCount() == 0 ? true : false,
+                            "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)
+                        ];break;
     
                     case 'INSERT':
-                        return [
+                        $rett = [
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data inserted successfully',
@@ -224,30 +264,30 @@ if (!function_exists('execute_query')) {
                             'id' => $pdo->lastInsertId(),
                             'rowcount' => $stmt->rowCount(),
                             'data' => $params
-                        ];
+                        ];break;
     
                     case 'UPDATE':
-                        return [
+                        $rett = [
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data updated successfully',
                             'lastquery' => $stmt->queryString,
                             'rowcount' => $stmt->rowCount(),
                             'msg' => $stmt->rowCount() == 0 ? "Success but no data affected" : "Data Updated Successfully",
-                        ];
+                        ];break;
     
                     case 'DELETE':
-                        return [
+                        $rett = [
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data deleted successfully',
                             'lastquery' => $stmt->queryString,
                             'rowcount' => $stmt->rowCount(),
                             'msg' => $stmt->rowCount() == 0 ? "Success but no data affected" : "Data Deleted Successfully",
-                        ];
+                        ];break;
     
                     default: // CREATE, DROP, etc.
-                        return [
+                        $rett= [
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => "$verb command executed",
@@ -255,13 +295,26 @@ if (!function_exists('execute_query')) {
                             'rowcount' => $stmt->rowCount()
                         ];
                 }
+                
+                $stmt->closeCursor();
+                $stmt = null;
+                if(getenv('sql_logs')=="true"){
+                    $toret = json_encode($rett);
+                    add_sql_log("(SUCCESS) ".$toret, "info");
+                }
+                return $rett;
     
             } catch (PDOException $e) {
-                return [
+                $rett = [
                     "code" => getenv('error_code'),
                     "status" => "error",
                     "message" => "Database error: " . $e->getMessage()
                 ];
+                if(getenv('sql_logs')=="true"){
+                    $toret = json_encode($rett);
+                    add_sql_log("(ERROR) ".$toret, "error");
+                }
+                return $rett;
             }
         }
     }

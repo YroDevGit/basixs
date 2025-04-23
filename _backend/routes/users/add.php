@@ -1,7 +1,9 @@
 <?php
+
+/** 
 $pdo =pdo("registrar");
 
-$results = execute_query("select * from coursemajor");
+$results = execute_query("select * from coursemajors");
 
 
 json_response([
@@ -11,6 +13,8 @@ json_response([
         "username" => $results
     ]
 ]);
+
+*/
 
 
 ?>
