@@ -30,6 +30,7 @@ if($bee){
         ]);exit;
     }
     include("_backend/core/be.php");
+    include("_backend/config/auto.php");
     include("_backend/routes/$bee.php");exit;
 }
 
@@ -51,6 +52,7 @@ if ($get) {
         if(!is_file("_frontend/pages/$mainpage")) {
             include("_frontend/errors/page404.php");exit;
         }
+        include("_frontend/config/auto.php");
         include("_frontend/pages/$mainpage");exit;
     }else{
         if(!file_exists("_frontend/pages/$get")) {
@@ -59,6 +61,7 @@ if ($get) {
         if(!is_file("_frontend/pages/$get")) {
             include("_frontend/errors/page404.php");exit;
         }
+        include("_frontend/config/auto.php");
         include("_frontend/pages/$get");exit;
     }
 }
