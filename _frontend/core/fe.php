@@ -25,7 +25,7 @@ if (file_exists(".env")) {
     }
 }
 
-define('mainpage', getenv('mainpage'));
+define('mainpage', getenv('mainpage') ?? "index.php");
 define('rootpath', getenv('rootpath'));
 
 define('pages', '_frontend/pages');
@@ -108,8 +108,20 @@ if(! function_exists("write_sql_error")){
     }
 }
 
+if(! function_exists("view_page")){
+    function view_page(string $page){
+        $page = substr($page, -4)==".php" ? $page : $page.".php";
+        if(file_exists("_frontend/pages/$page")){
+            include "_frontend/pages/$page";
+        }else{
+            include "_frontend/errors/include404.php";
+        }
+    }
+}
+
 if(! function_exists("include_page")){
     function include_page(string $page){
+        $page = substr($page, -4)==".php" ? $page : $page.".php";
         if(file_exists("_frontend/includes/$page")){
             include "_frontend/includes/$page";
         }else{
