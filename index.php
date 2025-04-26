@@ -16,6 +16,7 @@ function basixs_param_getter($param){
     }
 }
 
+include_once("_partials/basixs.php");
 include("_frontend/core/fe.php");
 
 $mainpage = mainpage;
