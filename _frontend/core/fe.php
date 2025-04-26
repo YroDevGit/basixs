@@ -39,13 +39,16 @@ define('SUCCESS', getenv('success_code'));
 
 if(! function_exists('page')){
     function page(string $path=""){
+
         if($path == "" || $path == null){
-            return pages;
+            return rootpath;
         }else{
-            return pages."/".$path;
+            $path = substr($path, -4)==".php" ? $path : $path.".php";
+            return rootpath."/?page=".$path;
         }
     }
 }
+
 if(! function_exists('_backend')){
     function _backend(string $path=""){
         if($path == "" || $path == null){
