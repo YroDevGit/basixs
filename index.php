@@ -14,7 +14,7 @@ $mainpage = mainpage;
 $bee = $_GET['be'] ?? false;
 if($bee){
     $bee = substr($bee, -4)==".php" ? $bee : $bee.".php";
-    if(!file_exists("_backend/routes/$bee")) {
+    if(!file_exists("_backend/_routes/$bee")) {
        echo json_encode([
             "code" => 404,
             "status" => "error",
@@ -22,7 +22,7 @@ if($bee){
             "data" => []
         ]);exit;
     }
-    if(!is_file("_backend/routes/$bee")) {
+    if(!is_file("_backend/_routes/$bee")) {
         echo json_encode([
             "code" => 404,
             "status" => "error",
@@ -32,7 +32,7 @@ if($bee){
     }
     include("_backend/core/be.php");
     include("_backend/config/auto.php");
-    include("_backend/routes/$bee");exit;
+    include("_backend/_routes/$bee");exit;
 }
 
 

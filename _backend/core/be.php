@@ -197,6 +197,55 @@ if (!function_exists('execute_select')) {
     }
 }
 
+if(! function_exists("execute_insert")){
+
+    function execute_insert(string $table, array $data): array
+    {
+        $columns = implode(", ", array_keys($data));
+        $placeholders = implode(", ", array_fill(0, count($data), "?"));
+        $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
+    
+        try {
+            $pdo  = pdo(); // Your own PDO factory/helper
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(array_values($data));
+            $lastInsertId = $pdo->lastInsertId();
+            if(getenv('sql_logs')=="true"){
+                add_sql_log("(SUCCESS) ".json_encode([
+                    "code" => getenv('success_code'),
+                    "status" => "success",
+                    "message" => "Data inserted successfully",
+                    "lastquery" => $stmt->queryString,
+                    "id" => $lastInsertId,
+                    "rowcount" => 1,
+                    "data" => $data
+                ]), "info");
+            }
+            return [
+                "code" => getenv('success_code'),
+                "status" => "success",
+                "message" => "Data inserted successfully",
+                "lastquery" => $stmt->queryString,
+                "id" => $lastInsertId,
+                "rowcount" => 1,
+                "data" => $data
+            ];
+        } catch (PDOException $e) {
+            if(getenv('sql_logs')=="true"){
+                add_sql_log("(ERROR) ".json_encode([
+                    "code" => getenv('error_code'),
+                    "status" => "error",
+                    "message" => "Database error: ".$e->getMessage()
+                ]), "error");
+            }
+            return [
+                "code" => getenv('error_code'),
+                "status" => "error",
+                "message" => "Database error: ".$e->getMessage()
+            ];
+        }
+    }
+}
 
 
 if (!function_exists('execute_query')) {
@@ -319,6 +368,44 @@ if (!function_exists('execute_query')) {
         }
     }
     
+}
+
+if(! function_exists("hash_password")){
+    function hash_password(string $password): string {
+        return password_hash($password, PASSWORD_BCRYPT);
+    }
+}
+
+if(! function_exists("verify_password")){
+    function verify_password(string $password, string $hash): bool {
+        return password_verify($password, $hash);
+    }
+}
+if(! function_exists("generate_token")){
+    function generate_token(int $length = 32): string {
+        return bin2hex(random_bytes($length / 2));
+    }
+}
+if(! function_exists("generate_random_string")){
+    function generate_random_string(int $length = 32): string {
+        return bin2hex(random_bytes($length / 2));
+    }
+}
+if(! function_exists("generate_random_number")){
+    function generate_random_number(int $length = 32): string {
+        return bin2hex(random_bytes($length / 2));
+    }
+}
+if(! function_exists("generate_random_string")){
+    function generate_random_string(int $length = 32): string {
+        return bin2hex(random_bytes($length / 2));
+    }
+}
+if(! function_exists("use_model")){
+    function use_model(string $model){
+        $model = substr($model, -4)==".php" ? $model : $model.".php";
+        include "_backend/model/".$model;
+    }
 }
 
 ?>

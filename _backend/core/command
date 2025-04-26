@@ -1,0 +1,96 @@
+<?php 
+if (PHP_SAPI !== 'cli') {
+    echo "This script should only be run from the command line.";
+    exit(1);
+}
+
+$arguments = $argv;
+$route = isset($arguments[1]) ? strtolower($arguments[1]) : '';
+$filename = isset($arguments[2]) ? $arguments[2] : '';
+
+if($route == "+model"){
+    if($filename == ""){
+        echo "❌ Please provide a filename for the model.\n";
+        exit(1);
+    }
+    $newname = ucfirst($filename);
+    $phpFile = "_backend/model/".ucfirst($newname).".php"; 
+
+    $phpContent = <<<EOT
+    <?php 
+        class $filename{
+            
+            public function __construct() {
+                // Constructor code here
+                // You can initialize properties or perform setup tasks
+            }
+
+
+            static function test(){
+                echo 'Hello Basixs user. This is model file';
+            }
+
+        
+
+        }
+    ?>
+    EOT;
+
+    if (file_exists($phpFile)) {
+        echo "❌ File already exists. Please choose a different name.\n";
+        exit(1);
+    } else {
+        if (file_put_contents($phpFile, $phpContent) !== false) {
+            echo "✔️ Model file created successfully: $phpFile\n";
+            exit(0);
+        } else {
+            echo "❌ Failed to create model file.\n";
+            exit(1);
+        }
+    } 
+}else if($route == "+route"){
+    if($filename == ""){
+        echo "❌ Please provide a filename for the controller.\n";
+        exit(1);
+    }
+    if(! str_contains($filename, "/")){
+        echo "❌ Please provide a valid route name, Example: admin/add.\n";
+        exit(1);
+    }
+    $newname = ucfirst($filename);
+    $phpFile = "_backend/_routes/".ucfirst($newname).".php"; 
+
+    $phpContent = <<<EOT
+    <?php 
+        //Add codes here...
+
+
+    ?>
+    EOT;
+
+    if (file_exists($phpFile)) {
+        echo "❌ File already exists. Please choose a different name.\n";
+        exit(1);
+    } else {
+        $directory = dirname($phpFile);
+
+        if (!is_dir($directory)) {
+            if (!mkdir($directory, 0777, true)) {
+                die("Failed to create directories: $directory");
+            }
+        }
+
+        if (file_put_contents($phpFile, $phpContent) !== false) {
+            echo "✔️ Route file created successfully: $phpFile\n";
+            exit(0);
+        } else {
+            echo "❌ Failed to create controller file.\n";
+            exit(1);
+        }
+    } 
+}
+else{
+    echo "Invalid command.\n";
+    exit(1);
+}
+?>
