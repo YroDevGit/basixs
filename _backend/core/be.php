@@ -182,7 +182,8 @@ if (!function_exists('execute_select')) {
                 "isempty"=> empty($results) ? true : false,
                 "hasresults"=> !empty($results) ? true : false,
                 "rowcount" => $count,
-                "lastquery" => $lastquery
+                "lastquery" => $lastquery,
+                "first_row" => (!empty($results) ? true : false) == true ? $results[0] : []
             ];
 
         } catch (PDOException $e) {
