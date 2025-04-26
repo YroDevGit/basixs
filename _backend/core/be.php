@@ -247,6 +247,97 @@ if(! function_exists("execute_insert")){
     }
 }
 
+if(! function_exists("execute_update")){
+    function execute_update(string $table, array $data, array $where): array
+    {
+        $set = implode(", ", array_map(fn($col) => "$col = ?", array_keys($data)));
+        $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", array_keys($where)));
+        $sql = "UPDATE $table SET $set WHERE $whereClause";
+    
+        try {
+            $pdo  = pdo(); // Your own PDO factory/helper
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(array_merge(array_values($data), array_values($where)));
+            if(getenv('sql_logs')=="true"){
+                add_sql_log("(SUCCESS) ".json_encode([
+                    "code" => getenv('success_code'),
+                    "status" => "success",
+                    "message" => "Data updated successfully",
+                    "lastquery" => $stmt->queryString,
+                    "rowcount" => 1,
+                    "data" => $data
+                ]), "info");
+            }
+            return [
+                "code" => getenv('success_code'),
+                "status" => "success",
+                "message" => "Data updated successfully",
+                "lastquery" => $stmt->queryString,
+                "rowcount" => 1,
+                "data" => $data
+            ];
+        } catch (PDOException $e) {
+            if(getenv('sql_logs')=="true"){
+                add_sql_log("(ERROR) ".json_encode([
+                    "code" => getenv('error_code'),
+                    "status" => "error",
+                    "message" => "Database error: ".$e->getMessage()
+                ]), "error");
+            }
+            return [
+                "code" => getenv('error_code'),
+                "status" => "error",
+                "message" => "Database error: ".$e->getMessage()
+            ];
+        }
+    }
+}
+
+if(! function_exists("execute_delete")){
+    function execute_delete(string $table, array $where): array
+    {
+        $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", array_keys($where)));
+        $sql = "DELETE FROM $table WHERE $whereClause";
+    
+        try {
+            $pdo  = pdo(); // Your own PDO factory/helper
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(array_values($where));
+            if(getenv('sql_logs')=="true"){
+                add_sql_log("(SUCCESS) ".json_encode([
+                    "code" => getenv('success_code'),
+                    "status" => "success",
+                    "message" => "Data deleted successfully",
+                    "lastquery" => $stmt->queryString,
+                    "rowcount" => 1,
+                    "data" => $where
+                ]), "info");
+            }
+            return [
+                "code" => getenv('success_code'),
+                "status" => "success",
+                "message" => "Data deleted successfully",
+                "lastquery" => $stmt->queryString,
+                "rowcount" => 1,
+                "data" => $where
+            ];
+        } catch (PDOException $e) {
+            if(getenv('sql_logs')=="true"){
+                add_sql_log("(ERROR) ".json_encode([
+                    "code" => getenv('error_code'),
+                    "status" => "error",
+                    "message" => "Database error: ".$e->getMessage()
+                ]), "error");
+            }
+            return [
+                "code" => getenv('error_code'),
+                "status" => "error",
+                "message" => "Database error: ".$e->getMessage()
+            ];
+        }
+    }
+}
+
 
 if (!function_exists('execute_query')) {
     /**
@@ -368,6 +459,25 @@ if (!function_exists('execute_query')) {
         }
     }
     
+}
+
+if(! function_exists("start_transaction")){
+    function start_transaction(){
+        $pdo = pdo();
+        $pdo->beginTransaction();
+    }
+}
+if(! function_exists("commit_transaction")){
+    function commit_transaction(){
+        $pdo = pdo();
+        $pdo->commit();
+    }
+}
+if(! function_exists("rollback_transaction")){
+    function rollback_transaction(){
+        $pdo = pdo();
+        $pdo->rollBack();
+    }
 }
 
 if(! function_exists("hash_password")){
