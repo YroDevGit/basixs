@@ -39,12 +39,14 @@ define('SUCCESS', getenv('success_code'));
 
 if(! function_exists('page')){
     function page(string $path=""){
-
+        $bb = explode("?", $path);
+        $path = $bb[0];
+        $param = isset($bb[1]) ? "?".$bb[1] : "";
         if($path == "" || $path == null){
-            return rootpath;
+            return rootpath.$param;
         }else{
             $path = substr($path, -4)==".php" ? $path : $path.".php";
-            return rootpath."/?page=".$path;
+            return rootpath."/?page=".$path.$param;
         }
     }
 }
@@ -67,6 +69,13 @@ if(! function_exists('assets')){
         }
     }
 }
+
+if(! function_exists("get")){
+    function get(string $key){
+        return isset($_GET[$key]) ? $_GET[$key] : null;
+    }
+}
+
 
 if(! function_exists('href')){
     function href(string $path=""){

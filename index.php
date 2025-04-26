@@ -4,11 +4,6 @@ session_start();
 $_SESSION['basixserver'] = $basixserver;
 setcookie("rootpath", $basixserver, time() + ((86400) * 30), "/"); 
 
-
-include("_frontend/core/fe.php");
-
-$mainpage = mainpage;
-
 function basixs_param_getter($param){
     if($param != "" && $param != null){
         $param = explode("&", $param);
@@ -20,6 +15,11 @@ function basixs_param_getter($param){
         }
     }
 }
+
+include("_frontend/core/fe.php");
+
+$mainpage = mainpage;
+
 
 
 $bee = $_GET['be'] ?? false;
@@ -63,7 +63,7 @@ if ($get) {
     $bb = explode("?", $get);
     $bee = $bb[0];
     $param = isset($bb[1]) ? $bb[1] : "";
-    $get = substr($get, -4)==".php" ? $get : $get.".php";
+    $get = substr($bee, -4)==".php" ? $bee : $bee.".php";
     if(!file_exists("_frontend/pages/$get")) {
         include("_frontend/errors/page404.php");exit;
     }
