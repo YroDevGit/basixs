@@ -142,13 +142,13 @@ if(! function_exists("add_sql_log")){
         $mx = $arr[0].$arr[1].$arr[2].$arr[3].$arr[4];
 
         if($type=="info"){
-        $logfile = "_backend/logs/sql_logs/".date("Y-m-d-sql").".log"; // Path to your log file
+        $logfile = "_backend/logs/sql_logs/".date("Y-m-d")."sql.log"; // Path to your log file
         $timestamp = date('Y-m-d H:i:s');
         $logEntry = "INFO: ($mx) [$timestamp] $string\n";
         file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
         }
         if($type=="error"){
-            $logfile = "_backend/logs/sql_errors/".date("Y-m-d-sql").".log"; // Path to your log file
+            $logfile = "_backend/logs/sql_errors/".date("Y-m-d")."sql.log"; // Path to your log file
             $timestamp = date('Y-m-d H:i:s');
             $logEntry = "ERROR: ($mx) [$timestamp] $string\n";
             file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
