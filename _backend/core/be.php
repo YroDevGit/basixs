@@ -8,6 +8,15 @@ if(! function_exists('json_response')){
     }
 }
 
+if(! function_exists("json_reponse_data")){
+    function json_reponse_data(int $code, string $status, string $message, array $data) {
+        $result = ["code"=>$code, "status"=>$status, "message"=>$message, "data"=>$data];
+        header('Content-Type: application/json');
+        echo json_encode($result);
+        exit;
+    }
+}
+
 if(! function_exists('json_error')){
     function json_error(string $message, int $status = 400) {
         json_response([
@@ -42,6 +51,25 @@ if(! function_exists("post")){
             $post = $_POST;
         }
         return isset($post[$inputname]) ? $post[$inputname] : null;
+    }
+}
+
+if(! function_exists("postdata")){
+    /** (Any) returns the value of the post */
+    function postdata(){
+        $post = [];
+         if (isset($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] === 'application/json') {
+            $json = file_get_contents('php://input');
+            $data = json_decode($json, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $post = $data;
+            } else {
+                $post = [];
+            }
+        } else {
+            $post = $_POST;
+        }
+        return $post;
     }
 }
 
@@ -516,6 +544,13 @@ if(! function_exists("use_model")){
     function use_model(string $model){
         $model = substr($model, -4)==".php" ? $model : $model.".php";
         include "_backend/model/".$model;
+    }
+}
+
+if(! function_exists("use_library")){
+    function use_library(string $library){
+        $model = substr($library, -4)==".php" ? $library : $library.".php";
+        include "_backend/core/library/".$model;
     }
 }
 
