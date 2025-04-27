@@ -26,6 +26,7 @@ class Validate
 
         $value = trim($postdata[$postname]);
         $rulesArray = explode('|', $rules);
+        $rulesArray = array_reverse($rulesArray);
 
         foreach ($rulesArray as $rule) {
             $ruleParts = explode(':', $rule, 2);
