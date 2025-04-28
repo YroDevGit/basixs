@@ -23,7 +23,7 @@ $mainpage = mainpage;
 
 
 
-$bee = $_GET['be'] ?? false;
+$bee = $_GET['be'] ?? $_GET['backend'] ?? false;
 if($bee){
     $bb = explode("?", $bee);
     $bee = $bb[0];
@@ -57,7 +57,7 @@ if($bee){
 }
 
 
-$get = $_GET['page'] ?? false;
+$get = $_GET['page'] ?? $_GET['p'] ?? $_GET['fe'] ?? $_GET['frontend'] ?? false;
 $folder_to_fee = '_frontend/auto';
 
 if ($get) {
