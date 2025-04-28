@@ -1091,6 +1091,166 @@ function jsDataTable(selector){
 }
 
 
+function jspost_validation(postdata, rules) {
+    let isValid = true;
+  
+    // Clear previous error messages
+    rules.forEach(rule => {
+      document.getElementById(rule[2]).innerText = ''; // Clear previous error message
+    });
+  
+    // Loop through all the validation rules
+    rules.forEach(rule => {
+      const inputName = rule[0]; // The name of the input field
+      const errorLabelId = rule[2]; // The ID of the label/span to show the error
+      const fieldLabel = rule[1]; // The label to show in the error message
+      const ruleString = rule[3]; // The validation rules as a string (e.g., "required|email")
+  
+      const inputElement = postdata[inputName];
+  
+      // Split the rule string into individual rules
+      let ruleArray = ruleString.split('|');
+      ruleArray = ruleArray.reverse();
+  
+      // Loop through each rule and apply the corresponding validation
+      ruleArray.forEach(validationRule => {
+        const ruleParam = validationRule.includes(':') ? validationRule.split(':')[1] : null;
+        const ruleName = validationRule.split(':')[0];
+  
+        // Required validation
+        if (ruleName === 'required' && (inputElement === '' || inputElement === null)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} is required.`;
+          isValid = false;
+        }
+  
+        // Min length validation
+        if (ruleName === 'min' && inputElement.length < parseInt(ruleParam)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be at least ${ruleParam} characters.`;
+          isValid = false;
+        }
+  
+        // Max length validation
+        if (ruleName === 'max' && inputElement.length > parseInt(ruleParam)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must not exceed ${ruleParam} characters.`;
+          isValid = false;
+        }
+  
+        // Email validation
+        if (ruleName === 'email' && !filterEmail(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid email address.`;
+          isValid = false;
+        }
+  
+        // Numeric validation
+        if (ruleName === 'numeric' && isNaN(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a number.`;
+          isValid = false;
+        }
+  
+        // Alpha validation
+        if (ruleName === 'alpha' && !/^[a-zA-Z]+$/.test(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must contain only letters.`;
+          isValid = false;
+        }
+  
+        // Alphanumeric validation
+        if (ruleName === 'alphanumeric' && !/^[a-zA-Z0-9]+$/.test(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must contain only letters and numbers.`;
+          isValid = false;
+        }
+  
+        // Regex validation
+        if (ruleName === 'regex' && ruleParam && !new RegExp(ruleParam).test(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} format is invalid.`;
+          isValid = false;
+        }
+  
+        // Match validation
+        if (ruleName === 'match' && ruleParam && inputElement !== postdata[ruleParam]) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must match ${ruleParam.replace('_', ' ')}.`;
+          isValid = false;
+        }
+  
+        // In validation (check if value is one of the provided options)
+        if (ruleName === 'in' && ruleParam && !ruleParam.split(',').includes(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be one of: ${ruleParam}.`;
+          isValid = false;
+        }
+  
+        // Not in validation (check if value is NOT one of the provided options)
+        if (ruleName === 'not_in' && ruleParam && ruleParam.split(',').includes(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must not be one of: ${ruleParam}.`;
+          isValid = false;
+        }
+  
+        // Date validation
+        if (ruleName === 'date' && !isValidDate(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid date.`;
+          isValid = false;
+        }
+  
+        // URL validation
+        if (ruleName === 'url' && !isValidURL(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid URL.`;
+          isValid = false;
+        }
+  
+        // IP validation
+        if (ruleName === 'ip' && !isValidIP(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid IP address.`;
+          isValid = false;
+        }
+  
+        // Boolean validation
+        if (ruleName === 'boolean' && !['0', '1', 0, 1, true, false].includes(inputElement)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be true or false.`;
+          isValid = false;
+        }
+  
+        // Exact length validation
+        if (ruleName === 'length' && inputElement.length !== parseInt(ruleParam)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be exactly ${ruleParam} characters.`;
+          isValid = false;
+        }
+  
+        // Starts with validation
+        if (ruleName === 'starts_with' && !inputElement.startsWith(ruleParam)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must start with '${ruleParam}'.`;
+          isValid = false;
+        }
+  
+        // Ends with validation
+        if (ruleName === 'ends_with' && !inputElement.endsWith(ruleParam)) {
+          document.getElementById(errorLabelId).innerText = `${fieldLabel} must end with '${ruleParam}'.`;
+          isValid = false;
+        }
+      });
+    });
+  
+    return isValid;
+  }
+  
+  function filterEmail(value) {
+    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return emailPattern.test(value);
+  }
+  
+  function isValidDate(value) {
+    return !isNaN(Date.parse(value));
+  }
+  
+  function isValidURL(value) {
+    const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+    return urlPattern.test(value);
+  }
+  
+  function isValidIP(value) {
+    const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    return ipPattern.test(value);
+  }
+  
+
+
 
 
 
