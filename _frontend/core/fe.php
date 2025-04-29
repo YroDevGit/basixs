@@ -51,6 +51,30 @@ if(! function_exists('page')){
     }
 }
 
+if(! function_exists("current_page")){
+    function current_page(bool $php_exention = false):string{
+        $filename =  $_SESSION['basixs_current_page'] ?? getenv('app_name') ?? "Page not set";
+        if(! $php_exention){
+            $filename = substr($filename, -4) === '.php' ? substr($filename, 0, -4) : $filename;
+            return $filename;
+        }
+
+        return $filename;
+    }
+}
+
+if(! function_exists("page_title")){
+    function page_title(){
+        return $_SESSION['basixs_current_page_title'];
+    }
+}
+
+if(! function_exists("set_page_title")){
+    function set_page_title(string $pagetitle){
+        $_SESSION['basixs_current_page_title'] = $pagetitle;
+    }
+}
+
 if(! function_exists('_backend')){
     function _backend(string $path=""){
         if($path == "" || $path == null){

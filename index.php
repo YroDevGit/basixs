@@ -60,6 +60,7 @@ if($bee){
 $get = $_GET['page'] ?? $_GET['p'] ?? $_GET['fe'] ?? $_GET['frontend'] ?? false;
 $folder_to_fee = '_frontend/auto';
 
+
 if ($get) {
     $bb = explode("?", $get);
     $bee = $bb[0];
@@ -75,6 +76,7 @@ if ($get) {
     foreach (glob($folder_to_fee . '/*.php') as $filename) {
         include_once $filename;
     }
+    $_SESSION['basixs_current_page'] = $get;
     include("_frontend/pages/$get");exit;
 } else {
     if($get=="" || $get==null || $get == false){
@@ -88,6 +90,7 @@ if ($get) {
         foreach (glob($folder_to_fee . '/*.php') as $filename) {
             include_once $filename;
         }
+        $_SESSION['basixs_current_page'] = $mainpage;
         include("_frontend/pages/$mainpage");exit;
     }else{
         die("Page not found!");
