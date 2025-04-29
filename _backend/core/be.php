@@ -111,6 +111,24 @@ if(! function_exists("postfile")){
     }
 }
 
+if(! function_exists("has_internet_connection")){
+    function has_internet_connection($url = "http://www.google.com") {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); 
+        curl_setopt($ch, CURLOPT_HEADER, true); 
+        curl_setopt($ch, CURLOPT_NOBODY, true); 
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+        $data = curl_exec($ch);
+        if ($data) {
+            curl_close($ch);
+            return true;
+        } else {
+            curl_close($ch);
+            return false;
+        }
+    }
+}
+
 
 if(! function_exists("pdo")){
     /** (Any) returns the value of the get */
