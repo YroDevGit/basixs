@@ -4,6 +4,16 @@ session_start();
 $_SESSION['basixserver'] = $basixserver;
 setcookie("rootpath", $basixserver, time() + ((86400) * 30), "/"); 
 
+if(! defined("fe")){
+    define("fe", "_frontend");
+}
+if(! defined("fe_page")){
+    define("fe_page", "_frontend/pages");
+}
+if(! defined("be")){
+    define("be", "_backend");
+}
+
 function basixs_param_getter($param){
     if($param != "" && $param != null){
         $param = explode("&", $param);
