@@ -34,7 +34,7 @@ class Mail {
 
         if (!$message) {
             return [
-                "code" => getenv("404"),
+                "code" => getenv("notfound_code"),
                 "status" => "Message Not Found",
                 "message" => "Email Message Not Found.!"
             ];
