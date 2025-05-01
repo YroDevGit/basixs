@@ -609,5 +609,12 @@ if(! function_exists("set_sql_batch")){
     }
 }
 
+if(! function_exists("autoload_php")){
+    function autoload_php(string $filename){
+        $loadpage = substr($filename, -4)==".php" ? $filename : $filename.".php";
+        include "_backend/auto/php/".$loadpage;
+    }
+}
+
 
 ?>

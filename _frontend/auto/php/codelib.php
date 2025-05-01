@@ -1,5 +1,4 @@
 <?php
-
 if(! function_exists("code_library")){
     function code_library(){
         ?>
