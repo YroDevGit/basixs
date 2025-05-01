@@ -166,24 +166,40 @@ if(! function_exists("add_sql_log")){
         
 
         if($type=="info"){
-        $logfile = "_backend/logs/sql_logs/".date("Y-m-d")."sql.log"; // Path to your log file
-        $timestamp = date('Y-m-d H:i:s');
-        $logEntry = "INFO: ($mx) [$timestamp] $string\n";
-        file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+            if(getenv("sql_logs")=="true"){
+                $logfile = "_backend/logs/sql_logs/".date("Y-m-d")."sql.log"; // Path to your log file
+                $timestamp = date('Y-m-d H:i:s');
+                $logEntry = "INFO: ($mx) [$timestamp] $string\n";
+                file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+            }
         }
         if($type=="error"){
-            $logfile = "_backend/logs/sql_errors/".date("Y-m-d")."sql.log"; // Path to your log file
-            $timestamp = date('Y-m-d H:i:s');
-            $logEntry = "ERROR: ($mx) [$timestamp] $string\n";
-            file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+            if(getenv("sql_errors")=="true"){
+                $logfile = "_backend/logs/sql_errors/".date("Y-m-d")."sql.log"; // Path to your log file
+                $timestamp = date('Y-m-d H:i:s');
+                $logEntry = "ERROR: ($mx) [$timestamp] $string\n";
+                file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+            }
         }
         if($type == "query"){
-            $logfile = "_backend/logs/query_logs/".date("Y-m-d")."sql.log"; // Path to your log file
-            $timestamp = date('Y-m-d H:i:s');
-            $logEntry = "$intro: ($mx) [$timestamp] $string\n";
-            file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+            if(getenv("query_logs")=="true"){
+                $logfile = "_backend/logs/query_logs/".date("Y-m-d")."sql.log"; // Path to your log file
+                $timestamp = date('Y-m-d H:i:s');
+                $logEntry = "$intro: ($mx) [$timestamp] $string\n";
+                file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+            }
         }
     }
+}
+
+if(! function_exists("my_log")){
+   function my_log(string $text, string $intro=""){
+        $logfile = "_backend/logs/my_logs/".date("Y-m-d")."sql.log"; // Path to your log file
+        $timestamp = date('Y-m-d H:i:s');
+        $intro = $intro=="" ? "" : $intro." ";
+        $logEntry =  $intro."[$timestamp] $text\n";
+        file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+   }
 }
 
 if (!function_exists('execute_select')) {
@@ -219,22 +235,9 @@ if (!function_exists('execute_select')) {
             $count =$stmt->rowCount();
             $lastquery = $stmt->queryString;
             $stmt->closeCursor();
-            $stmt = null;
             $lastSQL = interpolate_query($lastquery,$params, "success");
-            if(getenv('sql_logs')=="true"){
-                $toret = json_encode([
-                    "code" => getenv('success_code'),
-                    "status" => "success",
-                    "message" => "Query executed successfully",
-                    "isempty"=> empty($results) ? true : false,
-                    "hasresults"=> !empty($results) ? true : false,
-                    "rowcount" => $count,
-                    "lastquery" => $lastSQL,
-                    "data" => $results,
-                ]);
-                add_sql_log("(SUCCESS) ".$toret, "info");
-            }
-            return [
+
+            $toret = [
                 "code" => getenv('success_code'),
                 "status" => "success",
                 "message" => "Query executed successfully",
@@ -245,15 +248,20 @@ if (!function_exists('execute_select')) {
                 "lastquery" => $lastSQL,
                 "first_row" => (!empty($results) ? true : false) == true ? $results[0] : []
             ];
+            add_sql_log("(SUCCESS) ".json_encode($toret), "info");
+
+            return $toret;
 
         } catch (PDOException $e) {
+            $lastSQL = interpolate_query($query,$params, "error");
             $err =  [
                 "code" => getenv('error_code'),
                 "status" => "error",
-                "lastquery" => interpolate_query($lastquery,$params, "error"),
+                "lastquery" => $lastSQL,
                 "message" => "Database error: " . $e->getMessage()
             ];
-            add_sql_log("(ERROR) ".json_encode($err), "error");
+            add_sql_log("(ERROR) ".json_encode($err), "info");
+            add_sql_log("(ERROR) ".$e->getMessage(), "error");
             return $err;
         }
     }
@@ -273,18 +281,8 @@ if(! function_exists("execute_insert")){
             $stmt->execute(array_values($data));
             $lastInsertId = $pdo->lastInsertId();
             $lastSQL = interpolate_query($stmt->queryString,$data, "success");
-            if(getenv('sql_logs')=="true"){
-                add_sql_log("(SUCCESS) ".json_encode([
-                    "code" => getenv('success_code'),
-                    "status" => "success",
-                    "message" => "Data inserted successfully",
-                    "lastquery" => $lastSQL,
-                    "id" => $lastInsertId,
-                    "rowcount" => 1,
-                    "data" => $data
-                ]), "info");
-            }
-            return [
+
+            $rett = [
                 "code" => getenv('success_code'),
                 "status" => "success",
                 "message" => "Data inserted successfully",
@@ -293,22 +291,20 @@ if(! function_exists("execute_insert")){
                 "rowcount" => 1,
                 "data" => $data
             ];
+            add_sql_log("(SUCCESS) ".json_encode($rett), "info");
+
+            return $rett;
         } catch (PDOException $e) {
             $lastSql = interpolate_query($stmt->queryString,$data, "error");
-            if(getenv('sql_logs')=="true"){
-                add_sql_log("(ERROR) ".json_encode([
-                    "code" => getenv('error_code'),
-                    "status" => "error",
-                    "lastquery" => $lastSql,
-                    "message" => "Database error: ".$e->getMessage()
-                ]), "error");
-            }
-            return [
+            $err= [
                 "code" => getenv('error_code'),
                 "status" => "error",
                 "lastquery" => $lastSql,
                 "message" => "Database error: ".$e->getMessage()
             ];
+            add_sql_log("(ERROR) ".json_encode($err), "info");
+            add_sql_log("(ERROR) ".$e->getMessage(), "error");
+            return $err;
         }
     }
 }
@@ -328,43 +324,29 @@ if(! function_exists("execute_update")){
 
         $finalQuery = interpolate_query($sql, $params, "success");
 
-        if (getenv('sql_logs') == "true") {
-            add_sql_log("(SUCCESS) " . json_encode([
-                "code" => getenv('success_code'),
-                "status" => "success",
-                "message" => "Data updated successfully",
-                "lastquery" => $finalQuery,
-                "rowcount" => $stmt->rowCount(),
-                "data" => $data
-            ]), "info");
-        }
-
-        return [
+        $rett = [
             "code" => getenv('success_code'),
             "status" => "success",
             "message" => "Data updated successfully",
             "lastquery" => $finalQuery,
             "rowcount" => $stmt->rowCount(),
             "data" => $data
-        ];
+            ];
+
+        add_sql_log("(SUCCESS) " . json_encode($rett), "info");
+        return $rett;
     } catch (PDOException $e) {
         $finalQuery = interpolate_query($sql, $params, "error");
-
-        if (getenv('sql_logs') == "true") {
-            add_sql_log("(ERROR) " . json_encode([
-                "code" => getenv('error_code'),
-                "status" => "error",
-                "lastquery" => $finalQuery,
-                "message" => "Database error: " . $e->getMessage()
-            ]), "error");
-        }
-
-        return [
+        $err = [
             "code" => getenv('error_code'),
             "status" => "error",
             "lastquery" => $finalQuery,
             "message" => "Database error: " . $e->getMessage()
         ];
+        add_sql_log("(ERROR) ".json_encode($err), "info");
+        add_sql_log("(ERROR) ".$e->getMessage(), "error");
+
+        return $err;
     }
 }
 }
@@ -381,16 +363,16 @@ if(! function_exists("execute_delete")){
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array_values($where));
             $lastSQL = interpolate_query($stmt->queryString,$where, "success");
-            if(getenv('sql_logs')=="true"){
-                add_sql_log("(SUCCESS) ".json_encode([
-                    "code" => getenv('success_code'),
-                    "status" => "success",
-                    "message" => "Data deleted successfully",
-                    "lastquery" => $lastSQL,
-                    "rowcount" => 1,
-                    "data" => $where
-                ]), "info");
-            }
+
+            add_sql_log("(SUCCESS) ".json_encode([
+                "code" => getenv('success_code'),
+                "status" => "success",
+                "message" => "Data deleted successfully",
+                "lastquery" => $lastSQL,
+                "rowcount" => 1,
+                "data" => $where
+            ]), "info");
+            
             return [
                 "code" => getenv('success_code'),
                 "status" => "success",
@@ -401,20 +383,15 @@ if(! function_exists("execute_delete")){
             ];
         } catch (PDOException $e) {
             $finalQuery = interpolate_query($sql, $where, "error");
-            if(getenv('sql_logs')=="true"){
-                add_sql_log("(ERROR) ".json_encode([
-                    "code" => getenv('error_code'),
-                    "status" => "error",
-                    "lastquery" => $finalQuery,
-                    "message" => "Database error: ".$e->getMessage()
-                ]), "error");
-            }
-            return [
+            $err = [
                 "code" => getenv('error_code'),
                 "status" => "error",
                 "lastquery" => $finalQuery,
                 "message" => "Database error: ".$e->getMessage()
-            ];
+                ];
+            add_sql_log("(ERROR) ".json_encode($err), "info");
+            add_sql_log("(ERROR) ".$e->getMessage(), "error");
+            return $err;
         }
     }
 }
@@ -520,23 +497,21 @@ if (!function_exists('execute_query')) {
                 
                 $stmt->closeCursor();
                 $stmt = null;
-                if(getenv('sql_logs')=="true"){
-                    $toret = json_encode($rett);
-                    add_sql_log("(SUCCESS) ".$toret, "info");
-                }
+                $toret = json_encode($rett);
+                add_sql_log("(SUCCESS) ".$toret, "info");
                 return $rett;
     
             } catch (PDOException $e) {
+                $lastSQL = interpolate_query($sql,$params, "error");
                 $rett = [
                     "code" => getenv('error_code'),
                     "status" => "error",
-                    "lastquery" => interpolate_query($stmt->queryString,$params, "error"),
-                    "message" => "Database error: " . $e->getMessage()
+                    "lastquery" => $lastSQL,
+                    "message" => "Database error: " . $e->getMessage(),
+                    
                 ];
-                if(getenv('sql_logs')=="true"){
-                    $toret = json_encode($rett);
-                    add_sql_log("(ERROR) ".$toret, "error");
-                }
+                add_sql_log("(ERROR) ".json_encode($rett), "info");
+                add_sql_log("(ERROR) ".$e->getMessage(), "error");
                 return $rett;
             }
         }
@@ -620,10 +595,7 @@ function interpolate_query(string $query, array $params, $type = "undifined"): s
     foreach ($escapedParams as $value) {
         $query = preg_replace('/\?/', $value, $query, 1);
     }
-
-    if(getenv("query_logs")=="true"){
-        add_sql_log($query, "query",$type);
-    }
+    add_sql_log($query, "query",$type);
     return $query;
 }
 
