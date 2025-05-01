@@ -157,7 +157,13 @@ if(! function_exists("add_sql_log")){
     function add_sql_log(string $string, $type = "info", $intro = ""){
         $arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1","2","3", "4", "5", "6", "7", "8", "9"];
         shuffle($arr);
-        $mx = $arr[0].$arr[1].$arr[2].$arr[3].$arr[4];
+        $mx = null;
+        if(isset($_SESSION['set_sql_batch'])){
+            $mx = $_SESSION['set_sql_batch'];
+        }else{
+            $mx = $arr[0].$arr[1].$arr[2].$arr[3].$arr[4];
+        }
+        
 
         if($type=="info"){
         $logfile = "_backend/logs/sql_logs/".date("Y-m-d")."sql.log"; // Path to your log file
@@ -619,6 +625,16 @@ function interpolate_query(string $query, array $params, $type = "undifined"): s
         add_sql_log($query, "query",$type);
     }
     return $query;
+}
+
+if(! function_exists("set_sql_batch")){
+    function set_sql_batch(string $batch=""){
+        if($batch == "" || $batch == null){
+            unset($_SESSION['set_sql_batch']);
+        }else{
+            $_SESSION['set_sql_batch'] = $batch;
+        }
+    }
 }
 
 
