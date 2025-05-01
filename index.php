@@ -27,7 +27,9 @@ function basixs_param_getter($param){
 }
 
 include_once("partials/basixs.php");
+include("_frontend/core/fe.php");
 
+$mainpage = mainpage;
 
 $bee = $_GET['be'] ?? $_GET['backend'] ?? false;
 if($bee){
@@ -62,10 +64,8 @@ if($bee){
     include("_backend/_routes/$bee");exit;
 }
 
-include("_frontend/core/fe.php");
 
-$mainpage = mainpage;
-
+include("_frontend/core/autoloading.php");
 
 $get = $_GET['page'] ?? $_GET['p'] ?? $_GET['fe'] ?? $_GET['frontend'] ?? false;
 $folder_to_fee = '_frontend/auto';
