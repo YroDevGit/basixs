@@ -154,7 +154,7 @@ if(! function_exists("pdo")){
 
 if(! function_exists("add_sql_log")){
     /** (Any) returns the value of the get */
-    function add_sql_log(string $string, $type = "info"){
+    function add_sql_log(string $string, $type = "info", $intro = ""){
         $arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1","2","3", "4", "5", "6", "7", "8", "9"];
         shuffle($arr);
         $mx = $arr[0].$arr[1].$arr[2].$arr[3].$arr[4];
@@ -171,6 +171,12 @@ if(! function_exists("add_sql_log")){
             $logEntry = "ERROR: ($mx) [$timestamp] $string\n";
             file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
         }
+        if($type == "query"){
+            $logfile = "_backend/logs/query_logs/".date("Y-m-d")."sql.log"; // Path to your log file
+            $timestamp = date('Y-m-d H:i:s');
+            $logEntry = "$intro: ($mx) [$timestamp] $string\n";
+            file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+        }
     }
 }
 
@@ -184,6 +190,7 @@ if (!function_exists('execute_select')) {
      */
     function execute_select(string $query, array $params = []): array
     {
+        $stmt = null;
         try {
             $pdo  = pdo(); // Your own PDO factory/helper
             $stmt = $pdo->prepare($query);
@@ -207,6 +214,7 @@ if (!function_exists('execute_select')) {
             $lastquery = $stmt->queryString;
             $stmt->closeCursor();
             $stmt = null;
+            $lastSQL = interpolate_query($lastquery,$params, "success");
             if(getenv('sql_logs')=="true"){
                 $toret = json_encode([
                     "code" => getenv('success_code'),
@@ -215,7 +223,7 @@ if (!function_exists('execute_select')) {
                     "isempty"=> empty($results) ? true : false,
                     "hasresults"=> !empty($results) ? true : false,
                     "rowcount" => $count,
-                    "lastquery" => $lastquery,
+                    "lastquery" => $lastSQL,
                     "data" => $results,
                 ]);
                 add_sql_log("(SUCCESS) ".$toret, "info");
@@ -228,7 +236,7 @@ if (!function_exists('execute_select')) {
                 "isempty"=> empty($results) ? true : false,
                 "hasresults"=> !empty($results) ? true : false,
                 "rowcount" => $count,
-                "lastquery" => $lastquery,
+                "lastquery" => $lastSQL,
                 "first_row" => (!empty($results) ? true : false) == true ? $results[0] : []
             ];
 
@@ -236,6 +244,7 @@ if (!function_exists('execute_select')) {
             $err =  [
                 "code" => getenv('error_code'),
                 "status" => "error",
+                "lastquery" => interpolate_query($lastquery,$params, "error"),
                 "message" => "Database error: " . $e->getMessage()
             ];
             add_sql_log("(ERROR) ".json_encode($err), "error");
@@ -251,18 +260,19 @@ if(! function_exists("execute_insert")){
         $columns = implode(", ", array_keys($data));
         $placeholders = implode(", ", array_fill(0, count($data), "?"));
         $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
-    
+        $stmt = null;
         try {
             $pdo  = pdo(); // Your own PDO factory/helper
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array_values($data));
             $lastInsertId = $pdo->lastInsertId();
+            $lastSQL = interpolate_query($stmt->queryString,$data, "success");
             if(getenv('sql_logs')=="true"){
                 add_sql_log("(SUCCESS) ".json_encode([
                     "code" => getenv('success_code'),
                     "status" => "success",
                     "message" => "Data inserted successfully",
-                    "lastquery" => $stmt->queryString,
+                    "lastquery" => $lastSQL,
                     "id" => $lastInsertId,
                     "rowcount" => 1,
                     "data" => $data
@@ -272,22 +282,25 @@ if(! function_exists("execute_insert")){
                 "code" => getenv('success_code'),
                 "status" => "success",
                 "message" => "Data inserted successfully",
-                "lastquery" => $stmt->queryString,
+                "lastquery" => $lastSQL,
                 "id" => $lastInsertId,
                 "rowcount" => 1,
                 "data" => $data
             ];
         } catch (PDOException $e) {
+            $lastSql = interpolate_query($stmt->queryString,$data, "error");
             if(getenv('sql_logs')=="true"){
                 add_sql_log("(ERROR) ".json_encode([
                     "code" => getenv('error_code'),
                     "status" => "error",
+                    "lastquery" => $lastSql,
                     "message" => "Database error: ".$e->getMessage()
                 ]), "error");
             }
             return [
                 "code" => getenv('error_code'),
                 "status" => "error",
+                "lastquery" => $lastSql,
                 "message" => "Database error: ".$e->getMessage()
             ];
         }
@@ -296,66 +309,78 @@ if(! function_exists("execute_insert")){
 
 if(! function_exists("execute_update")){
     function execute_update(string $table, array $data, array $where): array
-    {
-        $set = implode(", ", array_map(fn($col) => "$col = ?", array_keys($data)));
-        $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", array_keys($where)));
-        $sql = "UPDATE $table SET $set WHERE $whereClause";
-    
-        try {
-            $pdo  = pdo(); // Your own PDO factory/helper
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute(array_merge(array_values($data), array_values($where)));
-            if(getenv('sql_logs')=="true"){
-                add_sql_log("(SUCCESS) ".json_encode([
-                    "code" => getenv('success_code'),
-                    "status" => "success",
-                    "message" => "Data updated successfully",
-                    "lastquery" => $stmt->queryString,
-                    "rowcount" => 1,
-                    "data" => $data
-                ]), "info");
-            }
-            return [
+{
+    $setClause = implode(", ", array_map(fn($col) => "$col = ?", array_keys($data)));
+    $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", array_keys($where)));
+    $sql = "UPDATE $table SET $setClause WHERE $whereClause";
+    $params = array_merge(array_values($data), array_values($where));
+
+    try {
+        $pdo  = pdo(); // Your own PDO factory/helper
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $finalQuery = interpolate_query($sql, $params, "success");
+
+        if (getenv('sql_logs') == "true") {
+            add_sql_log("(SUCCESS) " . json_encode([
                 "code" => getenv('success_code'),
                 "status" => "success",
                 "message" => "Data updated successfully",
-                "lastquery" => $stmt->queryString,
-                "rowcount" => 1,
+                "lastquery" => $finalQuery,
+                "rowcount" => $stmt->rowCount(),
                 "data" => $data
-            ];
-        } catch (PDOException $e) {
-            if(getenv('sql_logs')=="true"){
-                add_sql_log("(ERROR) ".json_encode([
-                    "code" => getenv('error_code'),
-                    "status" => "error",
-                    "message" => "Database error: ".$e->getMessage()
-                ]), "error");
-            }
-            return [
+            ]), "info");
+        }
+
+        return [
+            "code" => getenv('success_code'),
+            "status" => "success",
+            "message" => "Data updated successfully",
+            "lastquery" => $finalQuery,
+            "rowcount" => $stmt->rowCount(),
+            "data" => $data
+        ];
+    } catch (PDOException $e) {
+        $finalQuery = interpolate_query($sql, $params, "error");
+
+        if (getenv('sql_logs') == "true") {
+            add_sql_log("(ERROR) " . json_encode([
                 "code" => getenv('error_code'),
                 "status" => "error",
-                "message" => "Database error: ".$e->getMessage()
-            ];
+                "lastquery" => $finalQuery,
+                "message" => "Database error: " . $e->getMessage()
+            ]), "error");
         }
+
+        return [
+            "code" => getenv('error_code'),
+            "status" => "error",
+            "lastquery" => $finalQuery,
+            "message" => "Database error: " . $e->getMessage()
+        ];
     }
+}
 }
 
 if(! function_exists("execute_delete")){
     function execute_delete(string $table, array $where): array
     {
+        $stmt = "";
         $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", array_keys($where)));
         $sql = "DELETE FROM $table WHERE $whereClause";
-    
+        
         try {
             $pdo  = pdo(); // Your own PDO factory/helper
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array_values($where));
+            $lastSQL = interpolate_query($stmt->queryString,$where, "success");
             if(getenv('sql_logs')=="true"){
                 add_sql_log("(SUCCESS) ".json_encode([
                     "code" => getenv('success_code'),
                     "status" => "success",
                     "message" => "Data deleted successfully",
-                    "lastquery" => $stmt->queryString,
+                    "lastquery" => $lastSQL,
                     "rowcount" => 1,
                     "data" => $where
                 ]), "info");
@@ -364,21 +389,24 @@ if(! function_exists("execute_delete")){
                 "code" => getenv('success_code'),
                 "status" => "success",
                 "message" => "Data deleted successfully",
-                "lastquery" => $stmt->queryString,
+                "lastquery" => $lastSQL,
                 "rowcount" => 1,
                 "data" => $where
             ];
         } catch (PDOException $e) {
+            $finalQuery = interpolate_query($sql, $where, "error");
             if(getenv('sql_logs')=="true"){
                 add_sql_log("(ERROR) ".json_encode([
                     "code" => getenv('error_code'),
                     "status" => "error",
+                    "lastquery" => $finalQuery,
                     "message" => "Database error: ".$e->getMessage()
                 ]), "error");
             }
             return [
                 "code" => getenv('error_code'),
                 "status" => "error",
+                "lastquery" => $finalQuery,
                 "message" => "Database error: ".$e->getMessage()
             ];
         }
@@ -406,6 +434,7 @@ if (!function_exists('execute_query')) {
          */
         function execute_query(string $sql, array $params = [])
         {
+            $stmt = null;
             try {
                 $pdo  = pdo(); // Your own PDO helper
                 $stmt = $pdo->prepare($sql);
@@ -436,7 +465,7 @@ if (!function_exists('execute_query')) {
                             "status" => "success",
                             "message" => "Query executed successfully",
                             "rowcount" => $stmt->rowCount(),
-                            "lastquery" => $stmt->queryString,
+                            "lastquery" => interpolate_query($stmt->queryString,$params, "success"),
                             "hasresults"=> $stmt->rowCount() > 0 ? true : false,
                             "isempty"=> $stmt->rowCount() == 0 ? true : false,
                             "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)
@@ -447,7 +476,7 @@ if (!function_exists('execute_query')) {
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data inserted successfully',
-                            'lastquery' => $stmt->queryString,
+                            "lastquery" => interpolate_query($stmt->queryString,$params, "success"),
                             'id' => $pdo->lastInsertId(),
                             'rowcount' => $stmt->rowCount(),
                             'data' => $params
@@ -458,7 +487,7 @@ if (!function_exists('execute_query')) {
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data updated successfully',
-                            'lastquery' => $stmt->queryString,
+                            "lastquery" => interpolate_query($stmt->queryString,$params, "success"),
                             'rowcount' => $stmt->rowCount(),
                             'msg' => $stmt->rowCount() == 0 ? "Success but no data affected" : "Data Updated Successfully",
                         ];break;
@@ -468,7 +497,7 @@ if (!function_exists('execute_query')) {
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data deleted successfully',
-                            'lastquery' => $stmt->queryString,
+                            'lastquery' =>interpolate_query($stmt->queryString,$params, "success"),
                             'rowcount' => $stmt->rowCount(),
                             'msg' => $stmt->rowCount() == 0 ? "Success but no data affected" : "Data Deleted Successfully",
                         ];break;
@@ -478,7 +507,7 @@ if (!function_exists('execute_query')) {
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => "$verb command executed",
-                            'lastquery' => $stmt->queryString,
+                            "lastquery" => interpolate_query($stmt->queryString,$params, "success"),
                             'rowcount' => $stmt->rowCount()
                         ];
                 }
@@ -495,6 +524,7 @@ if (!function_exists('execute_query')) {
                 $rett = [
                     "code" => getenv('error_code'),
                     "status" => "error",
+                    "lastquery" => interpolate_query($stmt->queryString,$params, "error"),
                     "message" => "Database error: " . $e->getMessage()
                 ];
                 if(getenv('sql_logs')=="true"){
@@ -571,5 +601,25 @@ if(! function_exists("use_library")){
         include "_backend/core/library/".$model;
     }
 }
+
+function interpolate_query(string $query, array $params, $type = "undifined"): string
+{
+    $escapedParams = array_map(function ($param) {
+        if (is_null($param)) return 'NULL';
+        if (is_bool($param)) return $param ? '1' : '0';
+        if (is_numeric($param)) return $param;
+        return "'" . addslashes($param) . "'";
+    }, $params);
+
+    foreach ($escapedParams as $value) {
+        $query = preg_replace('/\?/', $value, $query, 1);
+    }
+
+    if(getenv("query_logs")=="true"){
+        add_sql_log($query, "query",$type);
+    }
+    return $query;
+}
+
 
 ?>
