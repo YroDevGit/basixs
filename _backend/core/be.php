@@ -1,4 +1,5 @@
 <?php
+$transaction_active = false;
 if(! function_exists('json_response')){
     function json_response(array $data, int $status = 200) {
         header('Content-Type: application/json');
@@ -133,17 +134,20 @@ if(! function_exists("has_internet_connection")){
 if(! function_exists("pdo")){
     /** (Any) returns the value of the get */
     function pdo($db = null){
+        static $pdo = null;
         try{
             $host = getenv('dbhost');
             $user =  getenv('dbuser');
             $pass = getenv('dbpass');
             $dbname = $db == null ? getenv('database') : $db;
-            $pdo = new PDO("mysql:host=$host;dbname=$dbname", "$user", "$pass", [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ]);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            if($pdo == null){
+                $pdo = new PDO("mysql:host=$host;dbname=$dbname", "$user", "$pass", [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            }
             return $pdo;
         }
         catch (PDOException $e) {
@@ -233,7 +237,7 @@ if (!function_exists('execute_select')) {
             $stmt->execute();
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $count =$stmt->rowCount();
-            $lastquery = $stmt->queryString;
+            $lastquery = $query;
             $stmt->closeCursor();
             $lastSQL = interpolate_query($lastquery,$params, "success");
 
@@ -280,7 +284,7 @@ if(! function_exists("execute_insert")){
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array_values($data));
             $lastInsertId = $pdo->lastInsertId();
-            $lastSQL = interpolate_query($stmt->queryString,$data, "success");
+            $lastSQL = interpolate_query($sql,$data, "success");
 
             $rett = [
                 "code" => getenv('success_code'),
@@ -295,7 +299,7 @@ if(! function_exists("execute_insert")){
 
             return $rett;
         } catch (PDOException $e) {
-            $lastSql = interpolate_query($stmt->queryString,$data, "error");
+            $lastSql = interpolate_query($sql,$data, "error");
             $err= [
                 "code" => getenv('error_code'),
                 "status" => "error",
@@ -362,7 +366,7 @@ if(! function_exists("execute_delete")){
             $pdo  = pdo(); // Your own PDO factory/helper
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array_values($where));
-            $lastSQL = interpolate_query($stmt->queryString,$where, "success");
+            $lastSQL = interpolate_query($sql,$where, "success");
 
             add_sql_log("(SUCCESS) ".json_encode([
                 "code" => getenv('success_code'),
@@ -448,7 +452,7 @@ if (!function_exists('execute_query')) {
                             "status" => "success",
                             "message" => "Query executed successfully",
                             "rowcount" => $stmt->rowCount(),
-                            "lastquery" => interpolate_query($stmt->queryString,$params, "success"),
+                            "lastquery" => interpolate_query($sql,$params, "success"),
                             "hasresults"=> $stmt->rowCount() > 0 ? true : false,
                             "isempty"=> $stmt->rowCount() == 0 ? true : false,
                             "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)
@@ -459,7 +463,7 @@ if (!function_exists('execute_query')) {
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data inserted successfully',
-                            "lastquery" => interpolate_query($stmt->queryString,$params, "success"),
+                            "lastquery" => interpolate_query($sql,$params, "success"),
                             'id' => $pdo->lastInsertId(),
                             'rowcount' => $stmt->rowCount(),
                             'data' => $params
@@ -470,7 +474,7 @@ if (!function_exists('execute_query')) {
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data updated successfully',
-                            "lastquery" => interpolate_query($stmt->queryString,$params, "success"),
+                            "lastquery" => interpolate_query($sql,$params, "success"),
                             'rowcount' => $stmt->rowCount(),
                             'msg' => $stmt->rowCount() == 0 ? "Success but no data affected" : "Data Updated Successfully",
                         ];break;
@@ -480,7 +484,7 @@ if (!function_exists('execute_query')) {
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => 'Data deleted successfully',
-                            'lastquery' =>interpolate_query($stmt->queryString,$params, "success"),
+                            'lastquery' =>interpolate_query($sql,$params, "success"),
                             'rowcount' => $stmt->rowCount(),
                             'msg' => $stmt->rowCount() == 0 ? "Success but no data affected" : "Data Deleted Successfully",
                         ];break;
@@ -490,7 +494,7 @@ if (!function_exists('execute_query')) {
                             'code' => getenv('success_code'),
                             'status' => 'success',
                             'message' => "$verb command executed",
-                            "lastquery" => interpolate_query($stmt->queryString,$params, "success"),
+                            "lastquery" => interpolate_query($sql,$params, "success"),
                             'rowcount' => $stmt->rowCount()
                         ];
                 }
@@ -519,22 +523,28 @@ if (!function_exists('execute_query')) {
     
 }
 
-if(! function_exists("start_transaction")){
-    function start_transaction(){
-        $pdo = pdo();
-        $pdo->beginTransaction();
-    }
+function start_transaction(){
+    global $transaction_active;
+    $pdo = pdo();
+    $pdo->beginTransaction();
+    $transaction_active = true;
 }
-if(! function_exists("commit_transaction")){
-    function commit_transaction(){
+
+function commit_transaction(){
+    global $transaction_active;
+    if ($transaction_active) {
         $pdo = pdo();
         $pdo->commit();
+        $transaction_active = false;
     }
 }
-if(! function_exists("rollback_transaction")){
-    function rollback_transaction(){
+
+function rollback_transaction(){
+    global $transaction_active;
+    if ($transaction_active) {
         $pdo = pdo();
         $pdo->rollBack();
+        $transaction_active = false;
     }
 }
 
