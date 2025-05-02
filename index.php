@@ -53,17 +53,15 @@ if($bee){
             "data" => []
         ]);exit;
     }
+    $_SESSION['basixs_current_be'] = $bee;
     basixs_param_getter($param);
     include("_backend/core/be.php");
     $folder_to_bee = '_backend/auto';
-
     foreach (glob($folder_to_bee . '/*.php') as $filename) {
         include_once $filename;
     }
-
     include("_backend/_routes/$bee");exit;
 }
-
 
 include("_frontend/core/autoloading.php");
 
@@ -82,11 +80,12 @@ if ($get) {
     if(!is_file("_frontend/pages/$get")) {
         include("_frontend/errors/page404.php");exit;
     }
+    $_SESSION['basixs_current_page'] = $get;
     basixs_param_getter($param);
+    
     foreach (glob($folder_to_fee . '/*.php') as $filename) {
         include_once $filename;
     }
-    $_SESSION['basixs_current_page'] = $get;
     include("_frontend/pages/$get");exit;
 } else {
     if($get=="" || $get==null || $get == false){
@@ -97,10 +96,11 @@ if ($get) {
         if(!is_file("_frontend/pages/$mainpage")) {
             include("_frontend/errors/page404.php");exit;
         }
+        $_SESSION['basixs_current_page'] = $mainpage;
+        
         foreach (glob($folder_to_fee . '/*.php') as $filename) {
             include_once $filename;
         }
-        $_SESSION['basixs_current_page'] = $mainpage;
         include("_frontend/pages/$mainpage");exit;
     }else{
         die("Page not found!");

@@ -616,5 +616,17 @@ if(! function_exists("autoload_php")){
     }
 }
 
+if(! function_exists("current_be")){
+    function current_be(bool $php_exention = false):string{
+        $filename =  $_SESSION['basixs_current_be'] ?? "Page not set";
+        if(! $php_exention){
+            $filename = substr($filename, -4) === '.php' ? substr($filename, 0, -4) : $filename;
+            return $filename;
+        }
+
+        return $filename;
+    }
+}
+
 
 ?>
