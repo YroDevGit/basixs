@@ -9,6 +9,26 @@ if(! function_exists('json_response')){
     }
 }
 
+if(! function_exists('success_response')){
+    function success_response(array $data, int $status = 200) {
+        $data['be_response'] = "success";
+        header('Content-Type: application/json');
+        http_response_code($status);
+        echo json_encode($data);
+        exit;
+    }
+}
+
+if(! function_exists('error_response')){
+    function error_response(array $data, int $status = 200) {
+        $data['be_response'] = "error";
+        header('Content-Type: application/json');
+        http_response_code($status);
+        echo json_encode($data);
+        exit;
+    }
+}
+
 if(! function_exists("json_reponse_data")){
     function json_reponse_data(int $code, string $status, string $message, array $data) {
         $result = ["code"=>$code, "status"=>$status, "message"=>$message, "data"=>$data];
