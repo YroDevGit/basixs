@@ -162,26 +162,33 @@ if(! function_exists("write_sql_error")){
 }
 
 if(! function_exists("view_page")){
-    function view_page(string $page){
+    function view_page(string $page, array $variables = []){
         $page = substr($page, -4)==".php" ? $page : $page.".php";
         if(file_exists("_frontend/pages/$page")){
+            if (!empty($variables)) {
+                extract($variables);
+            }
             include "_frontend/pages/$page";
         }else{
-            include "_frontend/errors/include404.php";
+            echo "<b style='color:red;background:black;padding:5px;font-weight:bold;'>Page $page doesn't exist.! Please check _frontend/pages/$page</b>";
         }
     }
 }
 
 if(! function_exists("include_page")){
-    function include_page(string $page){
+    function include_page(string $page, array $variables = []){
         $page = substr($page, -4)==".php" ? $page : $page.".php";
         if(file_exists("_frontend/includes/$page")){
+            if (!empty($variables)) {
+                extract($variables);
+            }
             include "_frontend/includes/$page";
         }else{
-            include "_frontend/errors/include404.php";
+            echo "<b style='color:red;background:black;padding:5px;font-weight:bold;'>Include page $page doesn't exist.! Please check _frontend/includes/$page</b>";
         }
     }
 }
+
 if(! function_exists("display_error111")){
     function display_error111(string $message){
         $str = new Exception($message);
