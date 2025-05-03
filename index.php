@@ -1,10 +1,6 @@
 <?php $basixserver = $_SERVER['HTTP_HOST']."/".trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/')?>
 <?php
 session_start();
-$basixsrpath = getenv("rootpath");
-if($basixsrpath == "" || $basixsrpath == null){
-    die("Root path not set at .env file, please set it first to start");
-}
 $_SESSION['basixserver'] = $basixserver;
 setcookie("rootpath", $basixserver, time() + ((86400) * 30), "/"); 
 
@@ -32,6 +28,11 @@ function basixs_param_getter($param){
 
 include_once("partials/basixs.php");
 include("_frontend/core/fe.php");
+
+$basixsrpath = getenv("rootpath");
+if($basixsrpath == "" || $basixsrpath == null){
+    die("Root path not set at .env file, please set it first to start");
+}
 
 $mainpage = mainpage;
 
