@@ -38,11 +38,12 @@ async function jspost(url, data, headers = { 'Content-Type': 'application/json' 
         if (response.ok) {
             const result = await response.json();
             ret = {
-                code: jssuccesscode,
-                backendcode: result.code || 0,
+                code: result.code ?? jssuccesscode,
+                backendcode: result.code ?? 0,
                 status: 'ok',
-                message: result.message || 'Okay',
-                data: result.data || [],
+                message: result.message ?? 'Okay',
+                data: result.data ?? [],
+                first_row : result.first_row ?? [],
                 result: result,
                 backend: result,
                 body: data,

@@ -265,6 +265,7 @@ if (!function_exists('execute_select')) {
             $lastquery = $query;
             $stmt->closeCursor();
             $lastSQL = interpolate_query($lastquery,$params, "success");
+            $firstrow = (!empty($results) ? true : false) == true ? $results[0] : [];
 
             $toret = [
                 "code" => getenv('success_code'),
@@ -275,7 +276,8 @@ if (!function_exists('execute_select')) {
                 "hasresults"=> !empty($results) ? true : false,
                 "rowcount" => $count,
                 "lastquery" => $lastSQL,
-                "first_row" => (!empty($results) ? true : false) == true ? $results[0] : []
+                "first_row" => $firstrow,
+                "firstrow" => $firstrow
             ];
             add_sql_log("(SUCCESS) ".json_encode($toret), "info");
 
