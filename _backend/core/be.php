@@ -160,6 +160,10 @@ if(! function_exists("pdo")){
             $user =  getenv('dbuser');
             $pass = getenv('dbpass');
             $dbname = $db == null ? getenv('database') : $db;
+            if($dbname == "" || $dbname == null){
+                add_sql_log("No database found. please check .env file","error");
+                error_response(["code"=>"404", "status"=>"notfound", "message"=>"No database found. please check .env file"]);
+            }
             if($pdo == null){
                 $pdo = new PDO("mysql:host=$host;dbname=$dbname", "$user", "$pass", [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -171,7 +175,8 @@ if(! function_exists("pdo")){
             return $pdo;
         }
         catch (PDOException $e) {
-            echo "Database connection failed: " . $e->getMessage();
+            add_sql_log($e->getMessage(),"error");
+            error_response(["code"=>getenv("500"),"status"=>"PDO exception error", "message"=>$e->getMessage()]);
         }
     }
 }

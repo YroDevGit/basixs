@@ -12,4 +12,11 @@ if(! function_exists("use_library")){
         include "_frontend/core/library/".$model;
     }
 }
+
+if(! function_exists("view_page")){
+    function view_page(string $page){
+        $page = substr($page, -4)==".php" ? $page : $page.".php";
+        include fe_page."/".$page;
+    }
+}
 ?>
