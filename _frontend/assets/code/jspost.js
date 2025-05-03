@@ -1090,7 +1090,6 @@ function jsDataTable(selector){
     return new DataTable(selector);
 }
 
-
 function jspost_validation(postdata, rules) {
     let isValid = true;
   
@@ -1248,9 +1247,39 @@ function jspost_validation(postdata, rules) {
     const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     return ipPattern.test(value);
   }
+
+  function selected_item($selector){
+    const select = document.querySelector($selector);
+    const selectedText = select.options[select.selectedIndex].text;
+    return selectedText;
+  }
+
+  function selected_value($selector){
+    const select = document.querySelector($selector);
+    const selectedText = select.value;
+    return selectedText;
+  }
+
+  function selected_index($selector){
+    const select = document.querySelector($selector);
+    const selectedIndex = select.selectedIndex;
+    return selectedIndex;
+  }
+
+  function set_selected_item($selector, $item){
+    const select = document.querySelector($selector);
+    for (let i = 0; i < select.options.length; i++) {
+    if (select.options[i].text === $item) {
+        select.selectedIndex = i;
+        break;
+    }
+    }
+  }
   
+  function set_selected_index($selector, $index){
+    document.querySelector($selector).selectedIndex = $index;
+  }
 
-
-
-
-
+  function set_selected_value($selector, $value){
+    document.querySelector($selector).value = $value;
+  }
