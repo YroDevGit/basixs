@@ -424,6 +424,10 @@ function on_load(callable){
     window.addEventListener("load", callable());
 }
 
+function dom_loaded(callable){
+    window.addEventListener("DOMContentLoaded", callable());
+}
+
 function reload(){
     window.location.reload();
 }
