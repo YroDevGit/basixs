@@ -34,6 +34,13 @@ define('assets', '_frontend/assets');
 define('SUCCESS', getenv('success_code'));
 
 
+define("now", date("Y-m-d H:i:s"));
+
+if(! function_exists("now")){
+    function now($dateformat = "Y-m-d H:i:s"){
+        return date($dateformat);
+    }
+}
 
 
 if(! function_exists('page')){
