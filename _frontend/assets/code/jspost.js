@@ -446,6 +446,10 @@ function set_value(name, value, by="id"){
     element.value = value;
 }
 
+function set_input_value(selector, value){
+    document.querySelector(selector).value = value;
+}
+
 function set_values(array, by="id"){
     let element = null;
     for (let key in array){
