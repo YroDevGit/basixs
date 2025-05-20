@@ -218,6 +218,16 @@ if(! function_exists("add_sql_log")){
                 file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
             }
         }
+
+        if($type == "be_errors"){
+            if(getenv("be_errors")=="true"){
+                $logfile = "_backend/logs/be_errors/".date("Y-m-d")."error.log"; // Path to your log file
+                $timestamp = date('Y-m-d H:i:s');
+                $logEntry = "$intro: ($mx) [$timestamp] $string\n";
+                file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+            }
+        }
+
     }
 }
 
@@ -664,6 +674,8 @@ if(! function_exists("current_be")){
         return $filename;
     }
 }
+
+
 
 
 ?>
