@@ -47,7 +47,7 @@ if ($bee) {
         echo json_encode([
             "code" => 404,
             "status" => "error",
-            "message" => "Backend File $bee not found",
+            "message" => "Backend route $bee not found",
             "data" => []
         ]);
         exit;
@@ -56,7 +56,7 @@ if ($bee) {
         echo json_encode([
             "code" => 404,
             "status" => "error",
-            "message" => "Backend File $bee not a file",
+            "message" => "Backend route $bee is not a PHP file",
             "data" => []
         ]);
         exit;
@@ -83,6 +83,7 @@ if ($bee) {
         $message = $e->getMessage();
         $code = $e->getCode();
         $getMessage =  $message . " at line $line in $file";
+        $msg = $message." at line $line in BE: $bee";
         $type = get_class($e);
         $err = [
             "code" => getenv("error_code"),
@@ -93,7 +94,8 @@ if ($bee) {
             "file" => $file,
             "type" => $type,
             "error_message" => $getMessage,
-            "message" => $message,
+            "msg" =>$message,
+            "message" => $msg,
             "data" => []
         ];
         add_sql_log($getMessage, "be_errors", date("His") . " " . $bee);
