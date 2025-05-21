@@ -76,29 +76,35 @@ if ($bee) {
         include("_backend/_routes/$bee");
         exit;
     } catch (Throwable  $e) {
+        $arr = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+        shuffle($arr);
         $trace = $e->getTrace();
         $traceString = $e->getTraceAsString();
         $line = $e->getLine();
         $file = $e->getFile();
         $message = $e->getMessage();
+        $randint = $arr[0] . $arr[1] . $arr[2] . $arr[3] . $arr[4];
+        $thisdate = date("mdHis");
+        $hascode = $randint . $thisdate;
         $code = $e->getCode();
         $getMessage =  $message . " at line $line in $file";
         $msg = $message." at line $line in BE: $bee";
         $type = get_class($e);
         $err = [
-            "code" => getenv("error_code"),
+            "code" => getenv("backend_error"),
             "status" => "error",
             "trace" => $trace,
             "fulltrace" => $traceString,
             "line" => $line,
             "file" => $file,
             "type" => $type,
+            "error_code" => $hascode,
             "error_message" => $getMessage,
             "msg" =>$message,
             "message" => $msg,
             "data" => []
         ];
-        add_sql_log($getMessage, "be_errors", date("His") . " " . $bee);
+        add_sql_log($getMessage, "be_errors", $hascode . " " . $bee);
         echo json_encode($err);
         exit;
     } finally {
