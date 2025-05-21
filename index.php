@@ -91,7 +91,7 @@ if ($bee) {
         $msg = $message." at line $line in BE: $bee";
         $type = get_class($e);
         $err = [
-            "code" => getenv("backend_error"),
+            "code" => getenv("backend_error_code"),
             "status" => "error",
             "trace" => $trace,
             "fulltrace" => $traceString,
