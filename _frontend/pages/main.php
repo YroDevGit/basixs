@@ -19,7 +19,7 @@
 </head>
 <body class="h-screen flex flex-col justify-center items-center text-center px-4">
   <div class="glow text-6xl md:text-7xl font-bold mb-4">
-    Basixs
+    Basixs v2.3
   </div>
   <p class="text-xl md:text-2xl text-green-300 mb-8">
     The most basic PHP framework — clean, fast and beginner friendly.
@@ -33,6 +33,18 @@
       Download
     </a>
   </div>
+
+  <section>
+    <div style="padding-top:30px;">
+      <h2 style="font-weight: bold; font-size:large;">What's new?</h2>
+      <ul>
+        <li>-Javascript global content</li>
+        <li>-Roothpath update</li>
+        <li>-Rootpath default</li>
+        <li>-Add & Set HTML updated</li>
+      </ul>
+    </div>
+  </section>
 
   <footer class="absolute bottom-4 text-green-500 text-sm opacity-60">
     &copy; <?= date('Y') ?> Basixs Framework. Built with ❤️ in PHP <br>by YROS.

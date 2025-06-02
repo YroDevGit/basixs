@@ -14,6 +14,31 @@ if (! defined("be")) {
     define("be", "_backend");
 }
 
+function get_basixs_root_path()
+{
+    $protocol = 'http';
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        $protocol = 'https';
+    } elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        $protocol = 'https';
+    }
+
+    $host = $_SERVER['HTTP_HOST'];
+    $baseDir = dirname($_SERVER['SCRIPT_NAME']);
+
+    if ($baseDir === '/' || $baseDir === '\\') {
+        $baseDir = '';
+    }
+
+    $baseURL = $protocol . '://' . $host . $baseDir;
+
+    if (substr($baseURL, -1) === '/') {
+        $baseURL = rtrim($baseURL, '/');
+    }
+
+    return $baseURL;
+}
+
 function basixs_param_getter($param)
 {
     if ($param != "" && $param != null) {
@@ -29,11 +54,6 @@ function basixs_param_getter($param)
 
 include_once("partials/basixs.php");
 include("_frontend/core/fe.php");
-
-$basixsrpath = getenv("rootpath");
-if ($basixsrpath == "" || $basixsrpath == null) {
-    die("Root path not set at .env file, please set it first to start");
-}
 
 $mainpage = mainpage;
 
@@ -88,7 +108,7 @@ if ($bee) {
         $hascode = $randint . $thisdate;
         $code = $e->getCode();
         $getMessage =  $message . " at line $line in $file";
-        $msg = $message." at line $line in BE: $bee";
+        $msg = $message . " at line $line in BE: $bee";
         $type = get_class($e);
         $err = [
             "code" => getenv("backend_error_code"),
@@ -100,7 +120,7 @@ if ($bee) {
             "type" => $type,
             "error_code" => $hascode,
             "error_message" => $getMessage,
-            "msg" =>$message,
+            "msg" => $message,
             "message" => $msg,
             "data" => []
         ];
@@ -120,12 +140,9 @@ $folder_to_fee = '_frontend/auto';
 
 if ($get) {
     if (strpos($get, '..') !== false || strpos($get, './') !== false) {
-       die("Invalid page request! - CodeYro Basixs");
+        die("Invalid page request! - CodeYro Basixs");
     }
 
-    if (pathinfo($get, PATHINFO_EXTENSION) !== 'php') {
-        die("Invalid page request! Only PHP files are allowed. - CodeYro Basixs");
-    }
 
     $bb = explode("?", $get);
     $bee = $bb[0];

@@ -586,15 +586,31 @@ function json_parse(string){
     return js_toarray(string);
 }
 
-function set_html(selector, strhtml){
-    let dive = null;
-    if (selector.charAt(0) === "#" || selector.charAt(0) === ".") {
-        dive = document.querySelector(selector);
-    }else{
-        dive = document.getElementById(selector);
+function set_html(selector, strhtml) {
+    let elements = [];
+
+    if (selector.charAt(0) === "#") {
+        const element = document.getElementById(selector.substring(1));
+        if (element) {
+            elements.push(element);
+        }
+    } else if (selector.charAt(0) === ".") {
+        elements = Array.from(document.querySelectorAll(selector));
+    } else {
+        const element = document.getElementById(selector);
+        if (element) {
+            elements.push(element);
+        }
     }
-    dive.innerHTML = strhtml;
+    if (elements.length > 0) {
+        elements.forEach(element => {
+            element.innerHTML = strhtml;
+        });
+    } else {
+        console.warn(`No elements found for selector: "${selector}"`);
+    }
 }
+
 
 function add_html(selector, strhtml) {
     let elements = [];
