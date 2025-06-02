@@ -119,6 +119,14 @@ $folder_to_fee = '_frontend/auto';
 
 
 if ($get) {
+    if (strpos($get, '..') !== false || strpos($get, './') !== false) {
+       die("Invalid page request! - CodeYro Basixs");
+    }
+
+    if (pathinfo($get, PATHINFO_EXTENSION) !== 'php') {
+        die("Invalid page request! Only PHP files are allowed. - CodeYro Basixs");
+    }
+
     $bb = explode("?", $get);
     $bee = $bb[0];
     $param = isset($bb[1]) ? $bb[1] : "";

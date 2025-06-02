@@ -13,4 +13,12 @@ if(! function_exists("use_library")){
     }
 }
 
+if(! function_exists("import_content")){
+    function import_content(string $file){
+        ?>
+        <script src="_frontend/auto/contents/<?=$file?>"></script>
+        <?php
+    }
+}
+
 ?>
