@@ -26,10 +26,10 @@
   </p>
 
   <div class="flex gap-4">
-    <a href="/docs" class="bg-transparent border border-green-400 text-green-300 px-6 py-2 hover:bg-green-700 transition">
-      Documentation
+    <a href="https://github.com/YroDevGit/basixs" class="bg-transparent border border-green-400 text-green-300 px-6 py-2 hover:bg-green-700 transition">
+      Visit
     </a>
-    <a href="/download" class="bg-green-500 text-black px-6 py-2 font-semibold hover:bg-green-600 transition">
+    <a href="https://github.com/YroDevGit/basixs/archive/refs/heads/main.zip" class="bg-green-500 text-black px-6 py-2 font-semibold hover:bg-green-600 transition">
       Download
     </a>
   </div>
@@ -45,7 +45,7 @@
   </section>
 
   <footer class="absolute bottom-4 text-green-500 text-sm opacity-60">
-    &copy; <?= date('Y') ?> Basixs Framework. Built with ❤️ in PHP <br>by YROS.
+    &copy; <?= date('Y') ?> Basixs Framework. Built with ❤️ in PHP <br>by <a href="https://www.tiktok.com/@codebasixs"><b>YROS</b></a>.
   </footer>
 </body>
 </html>
