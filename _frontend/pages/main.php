@@ -38,10 +38,8 @@
     <div style="padding-top:30px;">
       <h2 style="font-weight: bold; font-size:large;">What's new?</h2>
       <ul>
-        <li>-Javascript global content</li>
         <li>-Roothpath update</li>
         <li>-Rootpath default</li>
-        <li>-Add & Set HTML updated</li>
       </ul>
     </div>
   </section>
