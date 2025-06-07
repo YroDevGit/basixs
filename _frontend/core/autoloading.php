@@ -1,4 +1,14 @@
 <?php
+
+/**
+ * Autoloading functions for PHP files and libraries
+ * This file is part of the core functionality of the frontend.
+ * It includes functions to autoload PHP files, use libraries, and import scripts.
+ * Please do not modify this file directly.
+ * Instead, create a custom autoload file in your project root if needed.
+ * By CodeYro - Tyrone Lee Emz
+ */
+
 if(! function_exists("autoload_php")){
     function autoload_php(string $filename){
         $loadpage = substr($filename, -4)==".php" ? $filename : $filename.".php";
@@ -43,5 +53,7 @@ if(! function_exists("import_jspost")){
         <?php
     }
 }
+
+
 
 ?>
