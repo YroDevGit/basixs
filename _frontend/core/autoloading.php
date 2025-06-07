@@ -13,5 +13,35 @@ if(! function_exists("use_library")){
     }
 }
 
+if(! function_exists("import_swal")){
+    function import_swal(){
+        ?>
+        <script src="<?=assets('code/swal.js')?>"></script>
+        <?php
+    }
+}
+
+if(! function_exists("import_jquery")){
+    function import_jquery(){
+        ?>
+        <script src="<?=assets('code/jquery.js')?>"></script>
+        <?php
+    }
+}
+if(! function_exists("import_datatable")){
+    function import_datatable(){
+        ?>
+        <link rel="stylesheet" href="<?=assets('code/datatable.css')?>" />
+        <script src="<?=assets('code/datatable.js')?>"></script>
+        <?php
+    }
+}
+if(! function_exists("import_jspost")){
+    function import_jspost(){
+        ?>
+        <script src="<?=assets('code/jspost.js')?>"></script>
+        <?php
+    }
+}
 
 ?>
