@@ -8,20 +8,20 @@
  * @param {*}  
  * @returns 
  */
-const jserrorcode =-1;
+const jserrorcode = -1;
 const jssuccesscode = 200;
 const jsbaseurl = "http://localhost/basixs";
 
 async function mypost(url, data, headers = { 'Content-Type': 'application/json' }) {
-    return await jspost("?be="+url, data, headers);
+    return await jspost("?be=" + url, data, headers);
 }
 
 async function myget(url, headers = { 'Content-Type': 'application/json' }) {
-    return await jsget("?be="+url, headers);
+    return await jsget("?be=" + url, headers);
 }
 
 async function myput(url, data, where = {}, headers = { 'Content-Type': 'application/json' }) {
-    return jsput("?be="+url, data, where, headers);
+    return jsput("?be=" + url, data, where, headers);
 }
 
 
@@ -43,7 +43,7 @@ async function jspost(url, data, headers = { 'Content-Type': 'application/json' 
                 status: 'ok',
                 message: result.message ?? 'Okay',
                 data: result.data ?? [],
-                first_row : result.first_row ?? [],
+                first_row: result.first_row ?? [],
                 result: result,
                 backend: result,
                 body: data,
@@ -169,7 +169,7 @@ async function jsget(url, headers = { 'Content-Type': 'application/json' }) {
     return ret;
 }
 
-function jschange_effect(effect, dependencies){
+function jschange_effect(effect, dependencies) {
     //effect is a callable
     //dependencies is an array
     let previousDeps = myUseEffect.previousDeps || [];
@@ -178,10 +178,10 @@ function jschange_effect(effect, dependencies){
 
     if (hasChanged) {
         if (typeof myUseEffect.cleanup === "function") {
-            myUseEffect.cleanup(); 
+            myUseEffect.cleanup();
         }
-        myUseEffect.cleanup = effect(); 
-        myUseEffect.previousDeps = dependencies; 
+        myUseEffect.cleanup = effect();
+        myUseEffect.previousDeps = dependencies;
     }
 }
 
@@ -314,24 +314,24 @@ async function jsput_plain(url, data, where = {}, headers = { 'Content-Type': 'a
 }
 
 
-function get_form_data(selector){
-    let form  = null;
+function get_form_data(selector) {
+    let form = null;
     if (selector.charAt(0) === "#" || selector.charAt(0) === ".") {
         form = document.querySelector(selector);
-    }else{
-        form = document.querySelector(`#${selector}`); 
+    } else {
+        form = document.querySelector(`#${selector}`);
     }
 
     if (!form) return null;
 
-    const formData = new FormData(form);  
+    const formData = new FormData(form);
 
     const dataObject = {};
     formData.forEach((value, key) => {
-        dataObject[key] = value;  
+        dataObject[key] = value;
     });
 
-    return dataObject; 
+    return dataObject;
 }
 
 
@@ -339,7 +339,7 @@ function on_submit(selector, callable) {
     let form = null;
     if (selector.charAt(0) === "#" || selector.charAt(0) === ".") {
         form = document.querySelector(selector);
-    }else{
+    } else {
         form = document.getElementById(selector);
     }
     if (!form) {
@@ -351,7 +351,7 @@ function on_submit(selector, callable) {
         return;
     }
     form.onsubmit = function (event) {
-        callable(event); 
+        callable(event);
     };
 }
 
@@ -359,7 +359,7 @@ function on_click(selector, callable) {
     let form = null;
     if (selector.charAt(0) === "#" || selector.charAt(0) === ".") {
         form = document.querySelector(selector);
-    }else{
+    } else {
         form = document.getElementById(selector);
     }
     if (!form) {
@@ -371,28 +371,28 @@ function on_click(selector, callable) {
         return;
     }
     form.onclick = function (event) {
-        callable(event); 
+        callable(event);
     };
 }
 
 function filter_json_array(data, column, contains, wildcard = "%") {
     let filteredData;
-    
+
     if (wildcard === "%") {
         filteredData = data.filter(item => item[column].includes(contains));
     } else {
         filteredData = data.filter(item => item[column] === contains);
     }
-    
+
     return filteredData;
 }
 
-function direct_post(id, url, data=null, headers = { 'Content-Type': 'application/json' }){
+function direct_post(id, url, data = null, headers = { 'Content-Type': 'application/json' }) {
     const formdata = get_form_data(id);
-    if(data==null || data.length === 0){
+    if (data == null || data.length === 0) {
         data = formdata;
     }
-    return jspost(url,data,headers);
+    return jspost(url, data, headers);
 }
 
 
@@ -406,64 +406,64 @@ function direct_get(url, data = null, headers = { 'Content-Type': 'application/j
     }
 }
 
-function url_param(url, param=null){
+function url_param(url, param = null) {
     if (param == null || Object.keys(param).length === 0) {
         return url;
-    }else{
+    } else {
         const queryParams = new URLSearchParams(param).toString();
         return `${url}?${queryParams}`;
     }
 }
 
 
-function window_loaded(callable){
+function window_loaded(callable) {
     window.addEventListener("load", callable());
 }
 
-function on_load(callable){
+function on_load(callable) {
     window.addEventListener("load", callable());
 }
 
-function dom_loaded(callable){
+function dom_loaded(callable) {
     window.addEventListener("DOMContentLoaded", callable());
 }
 
-function reload(){
+function reload() {
     window.location.reload();
 }
 
-function log(text){
+function log(text) {
     console.log(text);
 }
 
-function set_value(name, value, by="id"){
+function set_value(name, value, by = "id") {
     let element = null;
-    if(by=="name"){
-       element = document.getElementsByName(name);
-    }else{
+    if (by == "name") {
+        element = document.getElementsByName(name);
+    } else {
         element = document.getElementById(name);
     }
     element.value = value;
 }
 
-function set_input_value(selector, value){
+function set_input_value(selector, value) {
     document.querySelector(selector).value = value;
 }
 
-function set_values(array, by="id"){
+function set_values(array, by = "id") {
     let element = null;
-    for (let key in array){
-        if(by=="name"){
+    for (let key in array) {
+        if (by == "name") {
             element = document.getElementsByName(key);
-         }else{
-             element = document.getElementById(key);
-         } 
-         element.value = array[key];
-    }  
+        } else {
+            element = document.getElementById(key);
+        }
+        element.value = array[key];
+    }
 }
 
 
-function set_form_values(form, array, by="name") {
+function set_form_values(form, array, by = "name") {
     let fform = `#${form}`;
     if (form.charAt(0) === "#" || form.charAt(0) === ".") {
         fform = `${form}`;
@@ -483,12 +483,12 @@ function set_form_values(form, array, by="name") {
     }
 }
 
-function set_form_data(form, array, by="name") {
+function set_form_data(form, array, by = "name") {
     return set_form_values(form, array, by);
 }
 
 
-function get_form_value(form, name, by="name"){
+function get_form_value(form, name, by = "name") {
     let fform = `#${form}`;
     if (form.charAt(0) === "#" || form.charAt(0) === ".") {
         fform = `${form}`;
@@ -500,7 +500,7 @@ function get_form_value(form, name, by="name"){
         element = document.querySelector(`${fform} *[id="${name}"]`);
     }
     if (element) {
-        
+
     } else {
         console.warn(`No input found for ${name} in form ${form}`);
     }
@@ -508,13 +508,13 @@ function get_form_value(form, name, by="name"){
     return element.value;
 }
 
-function get_form_values(id){
+function get_form_values(id) {
     return get_form_data(id)
 }
 
 function get_value(selector) {
     let element = null;
-    
+
     if (selector.charAt(0) === "#" || selector.charAt(0) === ".") {
         element = document.querySelector(selector);
     } else {
@@ -525,24 +525,24 @@ function get_value(selector) {
 }
 
 
-function get_element(selector){
+function get_element(selector) {
     if (selector.charAt(0) === "#" || selector.charAt(0) === ".") {
         return document.querySelector(selector);
-    }else{
+    } else {
         return document.getElementById(selector);
     }
 }
 
 function get_attribute(selector, attr) {
     let element = null;
-    
+
     if (selector.charAt(0) === "#" || selector.charAt(0) === ".") {
         element = document.querySelector(selector);
     } else {
         element = document.getElementById(selector);
     }
 
-    return element ? element.getAttribute(attr) : null; 
+    return element ? element.getAttribute(attr) : null;
 }
 
 
@@ -566,23 +566,23 @@ function set_attribute(selector, attributes) { // attributes should be an object
 }
 
 
-function js_tostring(array){
+function js_tostring(array) {
     return JSON.stringify(array);
 }
 
-function js_stringfy(array){
+function js_stringfy(array) {
     return js_tostring(array);
 }
 
-function js_toarray(string){
+function js_toarray(string) {
     return JSON.parse(string);
 }
 
-function json_stringfy(array){
+function json_stringfy(array) {
     return js_tostring(array);
 }
 
-function json_parse(string){
+function json_parse(string) {
     return js_toarray(string);
 }
 
@@ -638,47 +638,47 @@ function add_html(selector, strhtml) {
     }
 }
 
-function js_href(url, target="this"){
-    if(target == "this"){
+function js_href(url, target = "this") {
+    if (target == "this") {
         window.location.href = url;
-    }else{
+    } else {
         window.open(url, target);
     }
 }
 
-function js_selector(selector){
+function js_selector(selector) {
     return document.querySelector(selector);
 }
 
-function js_selector_all(selector){
-const elements = document.querySelectorAll(selector);
-return elements;
+function js_selector_all(selector) {
+    const elements = document.querySelectorAll(selector);
+    return elements;
 }
 
-function get_selector_value(selector){
+function get_selector_value(selector) {
     return document.querySelector(selector).value;
 }
 
-function js_timer(timer, callable){
+function js_timer(timer, callable) {
     setTimeout(callable, timer);
 }
 
-function js_interval(timmer, callable){
+function js_interval(timmer, callable) {
     setInterval(callable, timmer);
 }
-function set_session(key, value){
-    sessionStorage.setItem(key,value);
+function set_session(key, value) {
+    sessionStorage.setItem(key, value);
 }
 
-function get_session(key){
+function get_session(key) {
     return sessionStorage.getItem(key);
 }
 
-function remove_session(key){
+function remove_session(key) {
     sessionStorage.removeItem(key);
 }
 
-function clear_session(){
+function clear_session() {
     sessionStorage.clear();
 }
 
@@ -696,8 +696,8 @@ const jsform_validate = (formData, rules) => { // usage: rules = {"fname=>Firstn
             label = fieldName;
         }
 
-        const value = formData.get(fieldName) || ""; 
-        const fieldRules = validation.split("|"); 
+        const value = formData.get(fieldName) || "";
+        const fieldRules = validation.split("|");
 
         for (const rule of fieldRules) {
             const [ruleName, ruleParam] = rule.includes(":") ? rule.split(":") : [rule, null];
@@ -764,14 +764,14 @@ const jsform_validate = (formData, rules) => { // usage: rules = {"fname=>Firstn
                     break;
             }
 
-            if (errors[fieldName]) break; 
+            if (errors[fieldName]) break;
         }
     }
 
     return errors;
 };
 
-function jsinput_to_base64(selector){
+function jsinput_to_base64(selector) {
     return new Promise((resolve, reject) => {
         const fileInput = document.querySelector(selector);
 
@@ -785,9 +785,9 @@ function jsinput_to_base64(selector){
 
         reader.onload = function (e) {
             const base64Encoded = e.target.result.split(',')[1];
-            const mimeType = file.type; 
-            const fullDataUrl = `data:${mimeType};base64,${base64Encoded}`; 
-            resolve(fullDataUrl); 
+            const mimeType = file.type;
+            const fullDataUrl = `data:${mimeType};base64,${base64Encoded}`;
+            resolve(fullDataUrl);
         };
         reader.onerror = function () {
             reject('Error reading the file.');
@@ -801,12 +801,12 @@ function jsinput_to_base64(selector){
 
 async function jsfile_to_base64(filePath) {
     try {
-        const response = await fetch(filePath); 
-        const blob = await response.blob(); 
+        const response = await fetch(filePath);
+        const blob = await response.blob();
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () => resolve(reader.result); 
-            reader.onerror = reject; 
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
             reader.readAsDataURL(blob);
         });
     } catch (error) {
@@ -818,7 +818,7 @@ async function jsfile_to_base64(filePath) {
 
 function jsdownload_base64(base64Data, fileName) {
     const [mimeTypePart, base64Content] = base64Data.split(',');
-    const mimeType = mimeTypePart.match(/:(.*?);/)[1]; 
+    const mimeType = mimeTypePart.match(/:(.*?);/)[1];
 
     const mimeToExtension = {
         "image/png": "png",
@@ -838,7 +838,7 @@ function jsdownload_base64(base64Data, fileName) {
         "application/x-rar-compressed": "rar"
     };
 
-    const extension = mimeToExtension[mimeType] || "bin"; 
+    const extension = mimeToExtension[mimeType] || "bin";
 
     if (!fileName.includes('.')) {
         fileName = `${fileName}.${extension}`;
@@ -855,38 +855,38 @@ function jsdownload_base64(base64Data, fileName) {
 
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = fileName; 
-    document.body.appendChild(link); 
-    link.click(); 
-    document.body.removeChild(link); 
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 
-function jsimg_base64(imgselector, base64){
+function jsimg_base64(imgselector, base64) {
     document.querySelector(imgselector).src = base64;
 }
 
-function jsscroll(selector, attr){
+function jsscroll(selector, attr) {
     document.querySelector(selector).scrollTo(attr);
 }
 
-function array_key_exist(needle, array){//check if the array contains a key needle
+function array_key_exist(needle, array) {//check if the array contains a key needle
     return array.hasOwnProperty(needle);
 }
 
-function array_element_exist(needle, array){//check if the array has element needle
+function array_element_exist(needle, array) {//check if the array has element needle
     return array.includes(needle);
 }
 
-function array_value_exist(needle, array){ // check the array if it has a value needle
+function array_value_exist(needle, array) { // check the array if it has a value needle
     return Object.entries(array).find(([key, value]) => value === needle);
 }
 
-function array_value_contains(needle, array){ // check the array contains value needle
+function array_value_contains(needle, array) { // check the array contains value needle
     return Object.values(array).some(value => value.includes(needle));
 }
 
-function array_filter(filter, array){ // Filter the array
+function array_filter(filter, array) { // Filter the array
     const filteredarray = Object.fromEntries(
         Object.entries(array).filter(([key, value]) => value.includes(filter))
     );
@@ -928,7 +928,7 @@ function image_capture(callable) { // ussage image_capture((blob)=>{document.que
 
     const captureBtn = document.createElement("button");
     captureBtn.innerText = "Capture";
-    
+
     const retakeBtn = document.createElement("button");
     retakeBtn.innerText = "Retake";
     retakeBtn.style.display = "none";
@@ -1009,11 +1009,11 @@ function jsimage_show(imagePathOrBlob) { //display image popup //show_image // i
     overlay.style.cursor = 'pointer';
 
     const img = document.createElement('img');
-    img.style.maxHeight = '90vh'; 
+    img.style.maxHeight = '90vh';
     img.style.maxWidth = '90vw';
     img.style.objectFit = 'contain';
-    img.style.borderRadius = '8px'; 
-    img.style.cursor = 'default'; 
+    img.style.borderRadius = '8px';
+    img.style.cursor = 'default';
 
     if (imagePathOrBlob instanceof Blob) {
         img.src = URL.createObjectURL(imagePathOrBlob);
@@ -1049,7 +1049,7 @@ function jsimage_show(imagePathOrBlob) { //display image popup //show_image // i
     document.body.appendChild(overlay);
 }
 
-function jsqrcode(selector = "qrcode", text, height=300, width=300) {//needs to import qrcode (REQUIRED)
+function jsqrcode(selector = "qrcode", text, height = 300, width = 300) {//needs to import qrcode (REQUIRED)
     //Libraries: https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js
     // yros: php yros import jsqrcode
     if (!text) {
@@ -1091,7 +1091,7 @@ function jsqrscanner(callable, height = 500, width = 500) {
     const scannerDiv = document.createElement('div');
     scannerDiv.id = 'reader';
     scannerDiv.style.width = width + 'px';
-    scannerDiv.style.height = height + 'px'; 
+    scannerDiv.style.height = height + 'px';
     scannerDiv.style.background = '#fff';
     scannerDiv.style.borderRadius = '8px';
 
@@ -1114,7 +1114,7 @@ function jsqrscanner(callable, height = 500, width = 500) {
     const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
     scanner.render(decodedText => {
         scanner.clear();
-        document.body.removeChild(overlay); 
+        document.body.removeChild(overlay);
 
         if (typeof callable === "function") {
             callable(decodedText);
@@ -1127,204 +1127,236 @@ function jsqrscanner(callable, height = 500, width = 500) {
     };
 }
 
-function jsDataTable(selector){
+function jsDataTable(selector) {
     return new DataTable(selector);
 }
 
 function jspost_validation(postdata, rules) {
     let isValid = true;
-  
+
     // Clear previous error messages
     rules.forEach(rule => {
-      document.getElementById(rule[2]).innerText = ''; // Clear previous error message
+        document.getElementById(rule[2]).innerText = ''; // Clear previous error message
     });
-  
+
     // Loop through all the validation rules
     rules.forEach(rule => {
-      const inputName = rule[0]; // The name of the input field
-      const errorLabelId = rule[2]; // The ID of the label/span to show the error
-      const fieldLabel = rule[1]; // The label to show in the error message
-      const ruleString = rule[3]; // The validation rules as a string (e.g., "required|email")
-  
-      const inputElement = postdata[inputName];
-  
-      // Split the rule string into individual rules
-      let ruleArray = ruleString.split('|');
-      ruleArray = ruleArray.reverse();
-  
-      // Loop through each rule and apply the corresponding validation
-      ruleArray.forEach(validationRule => {
-        const ruleParam = validationRule.includes(':') ? validationRule.split(':')[1] : null;
-        const ruleName = validationRule.split(':')[0];
-  
-        // Required validation
-        if (ruleName === 'required' && (inputElement === '' || inputElement === null)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} is required.`;
-          isValid = false;
-        }
-  
-        // Min length validation
-        if (ruleName === 'min' && inputElement.length < parseInt(ruleParam)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be at least ${ruleParam} characters.`;
-          isValid = false;
-        }
-  
-        // Max length validation
-        if (ruleName === 'max' && inputElement.length > parseInt(ruleParam)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must not exceed ${ruleParam} characters.`;
-          isValid = false;
-        }
-  
-        // Email validation
-        if (ruleName === 'email' && !filterEmail(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid email address.`;
-          isValid = false;
-        }
-  
-        // Numeric validation
-        if (ruleName === 'numeric' && isNaN(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a number.`;
-          isValid = false;
-        }
-  
-        // Alpha validation
-        if (ruleName === 'alpha' && !/^[a-zA-Z]+$/.test(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must contain only letters.`;
-          isValid = false;
-        }
-  
-        // Alphanumeric validation
-        if (ruleName === 'alphanumeric' && !/^[a-zA-Z0-9]+$/.test(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must contain only letters and numbers.`;
-          isValid = false;
-        }
-  
-        // Regex validation
-        if (ruleName === 'regex' && ruleParam && !new RegExp(ruleParam).test(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} format is invalid.`;
-          isValid = false;
-        }
-  
-        // Match validation
-        if (ruleName === 'match' && ruleParam && inputElement !== postdata[ruleParam]) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must match ${ruleParam.replace('_', ' ')}.`;
-          isValid = false;
-        }
-  
-        // In validation (check if value is one of the provided options)
-        if (ruleName === 'in' && ruleParam && !ruleParam.split(',').includes(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be one of: ${ruleParam}.`;
-          isValid = false;
-        }
-  
-        // Not in validation (check if value is NOT one of the provided options)
-        if (ruleName === 'not_in' && ruleParam && ruleParam.split(',').includes(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must not be one of: ${ruleParam}.`;
-          isValid = false;
-        }
-  
-        // Date validation
-        if (ruleName === 'date' && !isValidDate(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid date.`;
-          isValid = false;
-        }
-  
-        // URL validation
-        if (ruleName === 'url' && !isValidURL(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid URL.`;
-          isValid = false;
-        }
-  
-        // IP validation
-        if (ruleName === 'ip' && !isValidIP(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid IP address.`;
-          isValid = false;
-        }
-  
-        // Boolean validation
-        if (ruleName === 'boolean' && !['0', '1', 0, 1, true, false].includes(inputElement)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be true or false.`;
-          isValid = false;
-        }
-  
-        // Exact length validation
-        if (ruleName === 'length' && inputElement.length !== parseInt(ruleParam)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must be exactly ${ruleParam} characters.`;
-          isValid = false;
-        }
-  
-        // Starts with validation
-        if (ruleName === 'starts_with' && !inputElement.startsWith(ruleParam)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must start with '${ruleParam}'.`;
-          isValid = false;
-        }
-  
-        // Ends with validation
-        if (ruleName === 'ends_with' && !inputElement.endsWith(ruleParam)) {
-          document.getElementById(errorLabelId).innerText = `${fieldLabel} must end with '${ruleParam}'.`;
-          isValid = false;
-        }
-      });
+        const inputName = rule[0]; // The name of the input field
+        const errorLabelId = rule[2]; // The ID of the label/span to show the error
+        const fieldLabel = rule[1]; // The label to show in the error message
+        const ruleString = rule[3]; // The validation rules as a string (e.g., "required|email")
+
+        const inputElement = postdata[inputName];
+
+        // Split the rule string into individual rules
+        let ruleArray = ruleString.split('|');
+        ruleArray = ruleArray.reverse();
+
+        // Loop through each rule and apply the corresponding validation
+        ruleArray.forEach(validationRule => {
+            const ruleParam = validationRule.includes(':') ? validationRule.split(':')[1] : null;
+            const ruleName = validationRule.split(':')[0];
+
+            // Required validation
+            if (ruleName === 'required' && (inputElement === '' || inputElement === null)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} is required.`;
+                isValid = false;
+            }
+
+            // Min length validation
+            if (ruleName === 'min' && inputElement.length < parseInt(ruleParam)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be at least ${ruleParam} characters.`;
+                isValid = false;
+            }
+
+            // Max length validation
+            if (ruleName === 'max' && inputElement.length > parseInt(ruleParam)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must not exceed ${ruleParam} characters.`;
+                isValid = false;
+            }
+
+            // Email validation
+            if (ruleName === 'email' && !filterEmail(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid email address.`;
+                isValid = false;
+            }
+
+            // Numeric validation
+            if (ruleName === 'numeric' && isNaN(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a number.`;
+                isValid = false;
+            }
+
+            // Alpha validation
+            if (ruleName === 'alpha' && !/^[a-zA-Z]+$/.test(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must contain only letters.`;
+                isValid = false;
+            }
+
+            // Alphanumeric validation
+            if (ruleName === 'alphanumeric' && !/^[a-zA-Z0-9]+$/.test(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must contain only letters and numbers.`;
+                isValid = false;
+            }
+
+            // Regex validation
+            if (ruleName === 'regex' && ruleParam && !new RegExp(ruleParam).test(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} format is invalid.`;
+                isValid = false;
+            }
+
+            // Match validation
+            if (ruleName === 'match' && ruleParam && inputElement !== postdata[ruleParam]) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must match ${ruleParam.replace('_', ' ')}.`;
+                isValid = false;
+            }
+
+            // In validation (check if value is one of the provided options)
+            if (ruleName === 'in' && ruleParam && !ruleParam.split(',').includes(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be one of: ${ruleParam}.`;
+                isValid = false;
+            }
+
+            // Not in validation (check if value is NOT one of the provided options)
+            if (ruleName === 'not_in' && ruleParam && ruleParam.split(',').includes(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must not be one of: ${ruleParam}.`;
+                isValid = false;
+            }
+
+            // Date validation
+            if (ruleName === 'date' && !isValidDate(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid date.`;
+                isValid = false;
+            }
+
+            // URL validation
+            if (ruleName === 'url' && !isValidURL(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid URL.`;
+                isValid = false;
+            }
+
+            // IP validation
+            if (ruleName === 'ip' && !isValidIP(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be a valid IP address.`;
+                isValid = false;
+            }
+
+            // Boolean validation
+            if (ruleName === 'boolean' && !['0', '1', 0, 1, true, false].includes(inputElement)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be true or false.`;
+                isValid = false;
+            }
+
+            // Exact length validation
+            if (ruleName === 'length' && inputElement.length !== parseInt(ruleParam)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must be exactly ${ruleParam} characters.`;
+                isValid = false;
+            }
+
+            // Starts with validation
+            if (ruleName === 'starts_with' && !inputElement.startsWith(ruleParam)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must start with '${ruleParam}'.`;
+                isValid = false;
+            }
+
+            // Ends with validation
+            if (ruleName === 'ends_with' && !inputElement.endsWith(ruleParam)) {
+                document.getElementById(errorLabelId).innerText = `${fieldLabel} must end with '${ruleParam}'.`;
+                isValid = false;
+            }
+        });
     });
-  
+
     return isValid;
-  }
-  
-  function filterEmail(value) {
+}
+
+function filterEmail(value) {
     const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return emailPattern.test(value);
-  }
-  
-  function isValidDate(value) {
+}
+
+function isValidDate(value) {
     return !isNaN(Date.parse(value));
-  }
-  
-  function isValidURL(value) {
+}
+
+function isValidURL(value) {
     const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
     return urlPattern.test(value);
-  }
-  
-  function isValidIP(value) {
+}
+
+function isValidIP(value) {
     const ipPattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     return ipPattern.test(value);
-  }
+}
 
-  function selected_item($selector){
+function selected_item($selector) {
     const select = document.querySelector($selector);
     const selectedText = select.options[select.selectedIndex].text;
     return selectedText;
-  }
+}
 
-  function selected_value($selector){
+function selected_value($selector) {
     const select = document.querySelector($selector);
     const selectedText = select.value;
     return selectedText;
-  }
+}
 
-  function selected_index($selector){
+function selected_index($selector) {
     const select = document.querySelector($selector);
     const selectedIndex = select.selectedIndex;
     return selectedIndex;
-  }
+}
 
-  function set_selected_item($selector, $item){
+function set_selected_item($selector, $item) {
     const select = document.querySelector($selector);
     for (let i = 0; i < select.options.length; i++) {
-    if (select.options[i].text === $item) {
-        select.selectedIndex = i;
-        break;
+        if (select.options[i].text === $item) {
+            select.selectedIndex = i;
+            break;
+        }
     }
-    }
-  }
-  
-  function set_selected_index($selector, $index){
+}
+
+function set_selected_index($selector, $index) {
     document.querySelector($selector).selectedIndex = $index;
-  }
+}
 
-  function set_selected_value($selector, $value){
+function set_selected_value($selector, $value) {
     document.querySelector($selector).value = $value;
-  }
+}
 
-  function dom_loaded(callable){
+function dom_loaded(callable) {
     document.addEventListener('DOMContentLoaded', callable);
-  }
+}
+
+function swal_success(message, title="Success") {
+    return Swal.fire({
+        title: title,
+        text: message,
+        icon: "success"
+    });
+}
+
+function swal_error(message, title="Error") {
+    return Swal.fire({
+        title: title,
+        text: message,
+        icon: "error"
+    });
+}
+
+function swal_warning(message, title="Warning") {
+    return Swal.fire({
+        title: title,
+        text: message,
+        icon: "warning"
+    });
+}
+
+function swal_info(message, title="Information") {
+    return Swal.fire({
+        title: title,
+        text: message,
+        icon: "info"
+    });
+}
