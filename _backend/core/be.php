@@ -39,23 +39,82 @@ if(! function_exists("json_reponse_data")){
 }
 
 if(! function_exists('json_error')){
-    function json_error(string $message, int $status = 400) {
+    function json_error(array $details = [], string $message = null, int $status = 200) {
         json_response([
-            "status" => "error",
-            "message" => $message,
-        ], $status);
+            "code" => getenv("error_code"),
+            "status" => "ERROR",
+            "message" => $message ?? "ERROR",
+            "details" => $details
+        ], $status);exit;
     }
 }
 
 if(! function_exists('json_success')){
-    function json_success(string $message, array $data = [], int $status = 200) {
+    function json_success(array $details = [], string $message = null, int $status = 200) {
         json_response([
-            "status" => "success",
-            "message" => $message,
-            "data" => $data,
-        ], $status);
+            "code" => getenv("success_code"),
+            "status" => "SUCCESS",
+            "message" => $message ?? "SUCCESS",
+            "details" => $details,
+        ], $status);exit;
     }
 }
+
+if(! function_exists('json_notfound')){
+    function json_notfound(array $details = [], string $message = null, int $status = 200) {
+        json_response([
+            "code" => getenv("notfound_code"),
+            "status" => "NOT_FOUND",
+            "message" => $message ?? "404 not found",
+            "details" => $details,
+        ], $status);exit;
+    }
+}
+
+if(! function_exists('json_failed')){
+    function json_failed(array $details = [], string $message = null, int $status = 200) {
+        json_response([
+            "code" => getenv("failed_code"),
+            "status" => "FAILED",
+            "message" => $message ?? "Request failed",
+            "details" => $details,
+        ], $status);exit;
+    }
+}
+
+if(! function_exists('json_badrequest')){
+    function json_badrequest(array $details = [], string $message = null, int $status = 200) {
+        json_response([
+            "code" => getenv("badrequest_code"),
+            "status" => "BAD_REQUEST",
+            "message" => $message ?? "Bad Request",
+            "details" => $details,
+        ], $status);exit;
+    }
+}
+
+if(! function_exists('json_forbidden')){
+    function json_forbidden(array $details = [], string $message = null, int $status = 200) {
+        json_response([
+            "code" => getenv("forbidden_code"),
+            "status" => "ACCESS_FORBIDDEN",
+            "message" => $message ?? "Request Forbidden",
+            "details" => $details,
+        ], $status);exit;
+    }
+}
+
+if(! function_exists('json_unauthorized')){
+    function json_unauthorized(array $details = [], string $message = null, int $status = 200) {
+        json_response([
+            "code" => getenv("unauthorized_code"),
+            "status" => "UNAUTHORIZED",
+            "message" => $message ?? "Unauthorized Request",
+            "details" => $details,
+        ], $status);exit;
+    }
+}
+
 if(! function_exists("post")){
     /** (Any) returns the value of the post */
     function post(string $inputname){
@@ -616,10 +675,18 @@ if(! function_exists("generate_random_string")){
         return bin2hex(random_bytes($length / 2));
     }
 }
+
 if(! function_exists("use_model")){
     function use_model(string $model){
         $model = substr($model, -4)==".php" ? $model : $model.".php";
         include "_backend/model/".$model;
+    }
+}
+
+if(! function_exists("use_middleware")){
+    function use_middleware(string $model){
+        $model = substr($model, -4)==".php" ? $model : $model.".php";
+        include "_backend/middleware/".$model;
     }
 }
 
@@ -672,6 +739,52 @@ if(! function_exists("current_be")){
         }
 
         return $filename;
+    }
+}
+
+if(! function_exists("server_headers")){
+    function server_headers(String $key = null){
+        $headers = [];
+        foreach ($_SERVER as $key => $value) {
+            if (strpos($key, 'HTTP_') === 0) {
+                $header = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
+                $headers[$header] = $value;
+            }
+        }
+        if($key == null){
+            return $headers;
+        }else{
+            return $headers[$key] ?? null;
+        }
+    }
+}
+
+if(! function_exists("request_method")){
+    function request_method(){
+        $method = $_SERVER['REQUEST_METHOD'];
+        return $method;
+    }
+}
+
+if(! function_exists("validate_request_method")){
+    function validate_request_method(String $req_method){
+        $method = $_SERVER['REQUEST_METHOD'];
+        return strtolower($method) == strtolower($req_method);
+    }
+}
+
+if(! function_exists("set_request_method")){
+    function set_request_method(String $req_method){
+        $method = $_SERVER['REQUEST_METHOD'];
+        if(strtoupper($req_method) != strtoupper($method)){
+            json_badrequest(["error"=>"Request method should be ".$req_method]);
+        }
+    }
+}
+
+if(! function_exists("my_hash")){
+    function my_hash(String $text, $length = 16){
+        return substr(md5($text), 0, $length);
     }
 }
 
