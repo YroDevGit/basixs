@@ -85,9 +85,7 @@ if ($bee) {
     basixs_param_getter($param);
     include("_backend/core/be.php");
     $folder_to_bee = '_backend/auto';
-    foreach (glob($folder_to_bee . '/*.php') as $filename) {
-        include_once $filename;
-    }
+    include_once $folder_to_bee."/loader.php";
     try {
         set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             throw new ErrorException($errstr, $errno, 0, $errfile, $errline);

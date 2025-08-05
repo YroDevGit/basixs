@@ -1,14 +1,23 @@
 <?php
 class Routing{
-    static function in_route(string $route, callable $func){
+    public function in_route(string $route, callable $func){
         $current = current_be();
-        $route = strtotime($route);
         $current = trim($current);
         $route = trim($route);
-        if($current == $route){
+        if(strtolower($current) == strtolower($route)){
+            $func();
+        }
+    }
+
+    public function group_route(array $routes, callable $func){
+        $current = current_be();
+        if(in_array($current, $routes)){
             $func();
         }
     }
 }
+
+
+
 
 ?>

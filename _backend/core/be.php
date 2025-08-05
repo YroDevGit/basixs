@@ -842,21 +842,29 @@ if (! function_exists("use_library")) {
     }
 }
 
-function interpolate_query(string $query, array $params, $type = "undifined"): string
+function interpolate_query(string $query, array $params, $type = "undefined"): string
 {
-    $escapedParams = array_map(function ($param) {
-        if (is_null($param)) return 'NULL';
-        if (is_bool($param)) return $param ? '1' : '0';
-        if (is_numeric($param)) return $param;
-        return "'" . addslashes($param) . "'";
-    }, $params);
+    $escapedParams = [];
 
-    foreach ($escapedParams as $value) {
-        $query = preg_replace('/\?/', $value, $query, 1);
+    foreach ($params as $key => $param) {
+        if (is_null($param)) {
+            $escapedParams[$key] = 'NULL';
+        } elseif (is_bool($param)) {
+            $escapedParams[$key] = $param ? '1' : '0';
+        } elseif (is_numeric($param)) {
+            $escapedParams[$key] = $param;
+        } else {
+            $escapedParams[$key] = "'" . addslashes($param) . "'";
+        }
+    }
+    foreach ($escapedParams as $key => $value) {
+        $placeholder = strpos($key, ':') === 0 ? $key : ':' . $key;
+        $query = preg_replace('/' . preg_quote($placeholder, '/') . '\b/', $value, $query);
     }
     add_sql_log($query, "query", $type);
     return $query;
 }
+
 
 if (! function_exists("set_sql_batch")) {
     function set_sql_batch(string $batch = "")
@@ -870,10 +878,38 @@ if (! function_exists("set_sql_batch")) {
 }
 
 if (! function_exists("autoload_php")) {
-    function autoload_php(string $filename)
+    function autoload_php(string|array $filename=null)
     {
-        $loadpage = substr($filename, -4) == ".php" ? $filename : $filename . ".php";
-        include "_backend/auto/php/" . $loadpage;
+        if(!$filename){
+            return false;
+        }
+        if (is_array($filename)) {
+            foreach ($filename as $f) {
+                $loadpage = substr($f, -4) == ".php" ? $f : $f . ".php";
+                include "_backend/auto/php/" . $loadpage;
+            }
+        } else {
+            $loadpage = substr($filename, -4) == ".php" ? $filename : $filename . ".php";
+            include "_backend/auto/php/" . $loadpage;
+        }
+    }
+}
+
+if (! function_exists("autoload_routing")) {
+    function autoload_routing(string|array $filename)
+    {
+        if(!$filename){
+            return false;
+        }
+        if (is_array($filename)) {
+            foreach ($filename as $f) {
+                $loadpage = substr($f, -4) == ".php" ? $f : $f . ".php";
+                include "_backend/auto/routing/" . $loadpage;
+            }
+        } else {
+            $loadpage = substr($filename, -4) == ".php" ? $filename : $filename . ".php";
+            include "_backend/auto/routing/" . $loadpage;
+        }
     }
 }
 
