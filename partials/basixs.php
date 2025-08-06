@@ -1,5 +1,5 @@
 <?php
-
+//CodeYro
 function encrypt($data, string $key = null) {
     if($data == null || $data == ""){
         return null;
