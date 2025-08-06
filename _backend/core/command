@@ -58,7 +58,7 @@ if ($route == "+class") {
 
     $phpContent = <<<EOT
     <?php
-    namespace App;
+    namespace Classes;
 
     class $newname{
 
