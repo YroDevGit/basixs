@@ -57,20 +57,43 @@ class BaseTable
         return array_map([$this, 'hydrate'], $rows);
     }
 
-    public function first($conditions)
+    public function first($conditions = [])
     {
         if (!is_array($conditions)) {
             throw new InvalidArgumentException("First conditions must be an associative array.");
         }
 
-        $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
+        if (empty($conditions)) {
+            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} LIMIT 1");
+            $stmt->execute();
+        } else {
+            $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
+            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE $whereClause LIMIT 1");
+            $stmt->execute($conditions);
+        }
 
-        $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE $whereClause LIMIT 1");
-        $stmt->execute($conditions);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? $this->hydrate($row) : null;
     }
 
+    public function last($conditions = [])
+    {
+        if (!is_array($conditions)) {
+            throw new InvalidArgumentException("Last conditions must be an associative array.");
+        }
+
+        if (empty($conditions)) {
+            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} ORDER BY id DESC LIMIT 1");
+            $stmt->execute();
+        } else {
+            $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
+            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE $whereClause ORDER BY id DESC LIMIT 1");
+            $stmt->execute($conditions);
+        }
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $this->hydrate($row) : null;
+    }
 
     public function create(array $data)
     {
