@@ -3,6 +3,7 @@
 session_start();
 $_SESSION['basixserver'] = $basixserver;
 setcookie("rootpath", $basixserver, time() + ((86400) * 30), "/");
+require_once 'vendor/autoload.php';
 
 if (! defined("fe")) {
     define("fe", "_frontend");
