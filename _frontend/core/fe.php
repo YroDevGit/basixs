@@ -61,6 +61,20 @@ if (! function_exists('page')) {
     }
 }
 
+if(! function_exists('back_end')){
+    function back_end(string $path = ""){
+        $bb = explode("?", $path);
+        $path = $bb[0];
+        $param = isset($bb[1]) ? "?" . $bb[1] : "";
+        if ($path == "" || $path == null) {
+            return rootpath . $param;
+        } else {
+            $path = substr($path, -4) == ".php" ? $path : $path . ".php";
+            return rootpath . "/?be=" . $path . $param;
+        }
+    }
+}
+
 if (! function_exists("current_page")) {
     function current_page(bool $php_exention = false): string
     {
