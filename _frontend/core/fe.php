@@ -6,8 +6,6 @@ if (file_exists(".env")) {
     if ($env_file) {
         while (($line = fgets($env_file)) !== false) {
             $line = trim($line);
-
-
             if ($line && strpos($line, '=') !== false) {
                 list($key, $value) = explode('=', $line, 2);
 
