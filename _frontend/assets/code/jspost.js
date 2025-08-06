@@ -1361,47 +1361,4 @@ function swal_info(message, title="Information") {
     });
 }
 
-function tyrux(options) {
-    var xhr = new XMLHttpRequest();
-    var method = options.method ? options.method.toUpperCase() : "GET";
-    var url = options.url;
-    var data = null;
-
-    if (options.data && typeof options.data === 'object') {
-        var params = [];
-        for (var key in options.data) {
-            params.push(encodeURIComponent(key) + '=' + encodeURIComponent(options.data[key]));
-        }
-        data = params.join('&');
-    }
-
-    if (method === "GET" && data) {
-        url += (url.indexOf("?") === -1 ? "?" : "&") + data;
-        data = null;
-    }
-
-    xhr.open(method, url, true);
-
-    if (method === "POST" && !options.headers) {
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    }
-
-    if (options.headers) {
-        for (var h in options.headers) {
-            xhr.setRequestHeader(h, options.headers[h]);
-        }
-    }
-
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                options.success && options.success(xhr.responseText, xhr);
-            } else {
-                options.error && options.error(xhr.statusText, xhr);
-            }
-        }
-    };
-
-    xhr.send(data);
-}
 

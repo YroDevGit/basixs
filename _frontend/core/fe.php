@@ -259,4 +259,11 @@ if (! function_exists("array_is_multidimensional")) {
     }
 }
 
+if(! function_exists("import_tyrux")){
+    function import_tyrux(){
+        $tyrux = assets("tyrux/index.js");
+        return '<script type="module">import "./'.$tyrux.'";</script>';
+    }
+}
+
 define('page', page(""));
