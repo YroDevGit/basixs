@@ -842,6 +842,18 @@ if (! function_exists("use_library")) {
     }
 }
 
+if (! function_exists("use_class")) {
+    function use_class(string $class)
+    {
+        $library = $class;
+        $modelFile = substr($library, -4) == ".php" ? $library : $library . ".php";
+        include "_backend/core/library/" . $modelFile;
+
+        $className = basename($library, ".php");
+        return new $className();
+    }
+}
+
 function interpolate_query(string $query, array $params, $type = "undefined"): string
 {
     $escapedParams = [];
