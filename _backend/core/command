@@ -54,7 +54,7 @@ if ($route == "+class") {
         exit(1);
     }
     $newname = ucfirst($filename);
-    $phpFile = "_backend/core/class/" . ucfirst($newname) . ".php";
+    $phpFile = "_backend/core/classes/" . ucfirst($newname) . ".php";
 
     $phpContent = <<<EOT
     <?php
