@@ -24,7 +24,7 @@ if ($route == "+base") {
             
             protected \$table = "$filename";
 
-            protected \$fillable = ["", "", ""];
+            protected \$fillable = [];
 
             protected \$timestamps = false;
 
