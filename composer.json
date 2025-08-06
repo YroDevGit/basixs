@@ -1,14 +1,16 @@
 {
-  "name": "yrodevgit/basixs",
-  "description": "A lightweight PHP framework by Tyrone Malocon",
-  "type": "library",
-  "license": "MIT",
-  "autoload": {
-    "psr-4": {
-      "Basixs\\": "src/"
-    }
-  },
-  "require": {
-    "php": ">=7.4"
-  }
+    "name": "yro/basixs",
+    "description": "A lightweight PHP framework by Tyrone Malocon",
+    "autoload": {
+        "psr-4": {
+            "Yro\\Basixs\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Tyrone",
+            "email": "tyronemalocon@gmail.com"
+        }
+    ],
+    "require": {}
 }
