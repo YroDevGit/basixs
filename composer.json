@@ -1,0 +1,14 @@
+{
+  "name": "tyroneleeemz/basixs",
+  "description": "A lightweight PHP framework by Tyrone Malocon",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Basixs\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7.4"
+  }
+}
