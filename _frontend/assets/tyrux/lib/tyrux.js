@@ -10,9 +10,17 @@ export class Tyrux {
     };
     #baseURL = "";
 
-    constructor(headers = {}, baseURL="") {
-        this.#defaultHeaders = { ...this.#defaultHeaders, ...headers };
-        this.#baseURL = baseURL;
+    #config = {};
+
+    constructor(config={}) {
+        if(config.headers){
+            let headers = config.headers;
+            this.#defaultHeaders = { ...this.#defaultHeaders, ...headers };
+        }
+        if(config.baseURL && config.baseURL != null && config.baseURL != ""){
+            this.#baseURL = config.baseURL;
+        }
+        this.#config = config;
     }
 
     request(options) {
@@ -46,7 +54,20 @@ export class Tyrux {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     options.success?.(xhr.responseText, xhr);
                 } else {
-                    options.error?.(xhr.statusText, xhr);
+                    const errB = xhr.statusText;
+                    const xhrB = xhr;
+                    if(this.#config?.error){
+                        if(this.#config.error == "console"){
+                            console.error(errB);
+                        }
+                        if(this.#config.error == "alert"){
+                            alert(errB);
+                        }
+                        if(this.#config.error == "log"){
+                            console.log(errB);
+                        }
+                    }
+                    options.error?.(errB, xhrB);
                 }
             }
         };

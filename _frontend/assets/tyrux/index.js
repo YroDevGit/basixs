@@ -1,16 +1,26 @@
 import { Tyrux } from "./lib/tyrux.js";
 
-const baseURL = ""; //base url of your backend
+const baseURL = "";  //Backend url end-point
+const baseRoute = "?be=";  // Your app default backend routing
 
 const headers = {
     Authorization: "Bearer sometoken" 
 };
 
-const api = new Tyrux(headers);
+const config = {
+    error: "console",
+    headers: headers,
+};
+
+
+
+const api = new Tyrux(config);
 
 function tyrux(request){
     api.request(request);
 }
 
+
 window.tyrux = tyrux;
 window.baseURL = baseURL;
+window.baseRoute = baseRoute;
