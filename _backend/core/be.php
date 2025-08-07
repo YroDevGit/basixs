@@ -734,16 +734,19 @@ if (!function_exists('execute_query')) {
     }
 }
 
-function start_transaction()
-{
+function db_start()
+{//Previous name: start_transaction
     global $transaction_active;
     $pdo = pdo();
-    $pdo->beginTransaction();
-    $transaction_active = true;
+    if (!$pdo->inTransaction()) {
+        $pdo->beginTransaction();
+        $transaction_active = true;
+    }
 }
 
-function commit_transaction()
-{
+
+function db_commit()
+{// Previous name: commit_transaction
     global $transaction_active;
     if ($transaction_active) {
         $pdo = pdo();
@@ -752,8 +755,8 @@ function commit_transaction()
     }
 }
 
-function rollback_transaction()
-{
+function db_rollback()
+{// rollback_transaction
     global $transaction_active;
     if ($transaction_active) {
         $pdo = pdo();

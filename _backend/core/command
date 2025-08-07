@@ -56,9 +56,10 @@ if ($route == "+base") {
 
     $phpContent = <<<EOT
     <?php 
-        require_once "_backend/core/library/BaseTable.php";
+        namespace Tables;
+        use Classes\BaseTable;
 
-        class $filename extends BaseTable{
+        class $newname extends BaseTable{
             
             protected \$table = "$filename";
 
@@ -130,21 +131,23 @@ if ($route == "+model") {
 
     $phpContent = <<<EOT
     <?php 
-        class $filename{
-            
-            public function __construct() {
-                // Constructor code here
-                // You can initialize properties or perform setup tasks
-            }
+    namespace Models;
 
-
-            static function test(){
-                echo 'Hello Basixs user. This is model file';
-            }
-
+    class $filename{
         
-
+        public function __construct() {
+            // Constructor code here
+            // You can initialize properties or perform setup tasks
         }
+
+
+        static function test(){
+            echo 'Hello Basixs user. This is model file';
+        }
+
+    
+
+    }
     ?>
     EOT;
 

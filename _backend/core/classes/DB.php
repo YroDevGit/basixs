@@ -2,11 +2,8 @@
 
 namespace Classes;
 
-use PDOException;
-
 class DB
 {
-
     private static $lastQuery;
     private static $lastBindings;
     private static $lastRowCount;
@@ -226,4 +223,6 @@ class DB
         if(! self::$lastData) return null;
         return self::$lastData;
     }
+
+    
 }
