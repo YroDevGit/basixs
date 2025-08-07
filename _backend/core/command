@@ -8,6 +8,41 @@ $arguments = $argv;
 $route = isset($arguments[1]) ? strtolower($arguments[1]) : '';
 $filename = isset($arguments[2]) ? $arguments[2] : '';
 
+if ($route == "run") {
+    include "_frontend/core/loadenv.php";
+    $host = getenv("rootpath");
+    if($host == null){
+        echo "❌ ERROR: 'rootpath' has no value (.env file)\n";
+        echo "💡 You can use: http://localhost:9999 as rootpath\n\n";
+        exit;
+    }
+    $dir = getenv("dir");
+    if ($dir == null) {
+        echo "❌ ERROR: 'dir' has no value (.env file)\n";
+        echo "💡 Put root folder name as your dir\n\n";
+        exit;
+    }
+    $dir = realpath(__DIR__ . '/../../../' . $dir);
+
+    if (!is_dir($dir)) {
+        echo "❌ Directory $dir does not exist.\n";
+        exit(1);
+    }
+
+    echo "\n⚡⚡ Basixs Framework by CodeYRO⚡⚡\n\n";
+    echo "🔄 Serving at $host\n";
+    echo "📁 Document root: $dir\n";
+    echo "--You can stop server by CTRL+C on your console\n\n";
+
+    $exp = explode("//", $host);
+    $runner = $exp[1];
+
+    $phpPath = PHP_BINARY;
+
+    $cmd = "\"$phpPath\" -S $runner -t \"$dir\"";
+    passthru($cmd);
+    exit;
+}
 if ($route == "+base") {
     if ($filename == "") {
         echo "❌ Please provide a filename for the base.\n";

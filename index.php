@@ -53,10 +53,8 @@ function basixs_param_getter($param)
     }
 }
 
-include_once("partials/basixs.php");
-include("_frontend/core/fe.php");
-
-$mainpage = mainpage;
+include_once("_backend/core/partials/basixs.php");
+include_once("_frontend/core/fe.php");
 
 $bee = $_GET['be'] ?? $_GET['backend'] ?? false;
 if ($bee) {
@@ -131,6 +129,12 @@ if ($bee) {
     }
 }
 
+include_once "_frontend/config/settings.php";
+
+define("mainpage", $bconfig['mainpage'] ?? "main");
+$mainpage = mainpage;
+$page404 = php_file($bconfig["error404"] ?? "page404");
+
 include("_frontend/core/autoloading.php");
 
 $get = $_GET['page'] ?? $_GET['p'] ?? $_GET['fe'] ?? $_GET['frontend'] ?? false;
@@ -148,11 +152,11 @@ if ($get) {
     $param = isset($bb[1]) ? $bb[1] : "";
     $get = substr($bee, -4) == ".php" ? $bee : $bee . ".php";
     if (!file_exists("_frontend/pages/$get")) {
-        include("_frontend/errors/page404.php");
+        include("_frontend/errors/$page404");
         exit;
     }
     if (!is_file("_frontend/pages/$get")) {
-        include("_frontend/errors/page404.php");
+        include("_frontend/errors/$page404");
         exit;
     }
     $_SESSION['basixs_current_page'] = $get;
@@ -165,13 +169,13 @@ if ($get) {
     exit;
 } else {
     if ($get == "" || $get == null || $get == false) {
-        $mainpage = substr($mainpage, -4) == ".php" ? $mainpage : $mainpage . ".php";
+        $mainpage = php_file($mainpage);
         if (!file_exists("_frontend/pages/$mainpage")) {
-            include("_frontend/errors/page404.php");
+            include("_frontend/errors/$page404");
             exit;
         }
         if (!is_file("_frontend/pages/$mainpage")) {
-            include("_frontend/errors/page404.php");
+            include("_frontend/errors/$page404");
             exit;
         }
         $_SESSION['basixs_current_page'] = $mainpage;

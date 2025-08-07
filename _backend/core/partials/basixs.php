@@ -13,10 +13,8 @@ function encrypt($data, string $key = null) {
     }else{
         $encrypted_data = openssl_encrypt($data, $cipher, $key, 0, $iv);
     }
-    
 
     $combined_data = $iv . $encrypted_data;
-
 
     $encrypted_data = base64_encode($combined_data);
 

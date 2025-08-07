@@ -1,28 +1,7 @@
 <?php
 
-if (file_exists(".env")) {
-    $env_file = fopen(".env", 'r');
+include "_frontend/core/loadenv.php";
 
-    if ($env_file) {
-        while (($line = fgets($env_file)) !== false) {
-            $line = trim($line);
-            if ($line && strpos($line, '=') !== false) {
-                list($key, $value) = explode('=', $line, 2);
-
-                $key    = trim($key);
-                $value  = trim($value);
-
-                if (!getenv($key)) {
-                    putenv("$key=$value");
-                    $_ENV[$key]     = $value;
-                }
-            }
-        }
-        fclose($env_file);
-    }
-}
-
-define('mainpage', getenv('mainpage') ?? "index.php");
 if (getenv("rootpath") == "" || getenv("rootpath") == null) {
     $rootpath = get_basixs_root_path();
     putenv("rootpath=$rootpath");
@@ -174,7 +153,7 @@ if (! function_exists("write_sql_log")) {
         $setting = getenv('sql_logs');
         if ($setting) {
             $filename = "sql_" . date("Y-M-d") . "_yros.log";
-            $logfile =  "partials/app/dblogs/" . $filename;
+            $logfile =  "_backend/core/partials/app/dblogs/" . $filename;
             $formatted_message = "[" . date('Y-m-d H:i:s') . "] " . $message . PHP_EOL;
             file_put_contents($logfile, $formatted_message, FILE_APPEND);
         }
@@ -186,7 +165,7 @@ if (! function_exists("write_sql_error")) {
     {;
         $setting = getenv('sql_errors');
         if ($setting == true) {
-            $logfile = "partials/app/db_errors/sqlerrors.txt";
+            $logfile = "_backend/core/partials/app/db_errors/sqlerrors.txt";
 
             $message = preg_replace('/\s+/', ' ', trim($message));
             $query = preg_replace('/\s+/', ' ', trim($query));
@@ -263,6 +242,13 @@ if(! function_exists("import_tyrux")){
     function import_tyrux(){
         $tyrux = assets("tyrux/index.js");
         return '<script type="module">import "./'.$tyrux.'";</script>';
+    }
+}
+
+if(! function_exists("php_file")){
+    function php_file($pagename){
+        $mainpage = substr($pagename, -4) == ".php" ? $pagename : $pagename . ".php";
+        return $mainpage;
     }
 }
 
