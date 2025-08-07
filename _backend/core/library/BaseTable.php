@@ -8,6 +8,9 @@ class BaseTable
     protected $timestamps = true;
     protected $hidden = [];
 
+    protected $lastQuery;
+    protected $lastBindings;
+
     public function __construct()
     {
         $this->pdo = pdo();
@@ -30,14 +33,22 @@ class BaseTable
 
     public function all()
     {
-        $stmt = $this->pdo->query("SELECT * FROM {$this->table}");
+        $sql = "SELECT * FROM {$this->table}";
+        $this->lastQuery = $sql;
+        $this->lastBindings = [];
+
+        $stmt = $this->pdo->query($sql);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return array_map([$this, 'hydrate'], $rows);
     }
 
     public function find($id)
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE id = :id LIMIT 1");
+        $sql = "SELECT * FROM {$this->table} WHERE id = :id LIMIT 1";
+        $this->lastQuery = $sql;
+        $this->lastBindings = ['id' => $id];
+
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? $this->hydrate($row) : null;
@@ -50,8 +61,11 @@ class BaseTable
         }
 
         $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
+        $sql = "SELECT * FROM {$this->table} WHERE $whereClause";
+        $this->lastQuery = $sql;
+        $this->lastBindings = $conditions;
 
-        $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE $whereClause");
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute($conditions);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return array_map([$this, 'hydrate'], $rows);
@@ -64,11 +78,19 @@ class BaseTable
         }
 
         if (empty($conditions)) {
-            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} LIMIT 1");
+            $sql = "SELECT * FROM {$this->table} LIMIT 1";
+            $this->lastQuery = $sql;
+            $this->lastBindings = [];
+
+            $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
         } else {
             $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
-            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE $whereClause LIMIT 1");
+            $sql = "SELECT * FROM {$this->table} WHERE $whereClause LIMIT 1";
+            $this->lastQuery = $sql;
+            $this->lastBindings = $conditions;
+
+            $stmt = $this->pdo->prepare($sql);
             $stmt->execute($conditions);
         }
 
@@ -83,11 +105,19 @@ class BaseTable
         }
 
         if (empty($conditions)) {
-            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} ORDER BY id DESC LIMIT 1");
+            $sql = "SELECT * FROM {$this->table} ORDER BY id DESC LIMIT 1";
+            $this->lastQuery = $sql;
+            $this->lastBindings = [];
+
+            $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
         } else {
             $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
-            $stmt = $this->pdo->prepare("SELECT * FROM {$this->table} WHERE $whereClause ORDER BY id DESC LIMIT 1");
+            $sql = "SELECT * FROM {$this->table} WHERE $whereClause ORDER BY id DESC LIMIT 1";
+            $this->lastQuery = $sql;
+            $this->lastBindings = $conditions;
+
+            $stmt = $this->pdo->prepare($sql);
             $stmt->execute($conditions);
         }
 
@@ -108,6 +138,9 @@ class BaseTable
         $placeholders = array_map(fn($col) => ":$col", $columns);
 
         $sql = "INSERT INTO {$this->table} (" . implode(",", $columns) . ") VALUES (" . implode(",", $placeholders) . ")";
+        $this->lastQuery = $sql;
+        $this->lastBindings = $data;
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($data);
 
@@ -123,7 +156,6 @@ class BaseTable
         }
 
         $setClause = implode(', ', array_map(fn($col) => "$col = :$col", array_keys($data)));
-
         $whereClause = implode(' AND ', array_map(fn($col) => "$col = :where_$col", array_keys($where)));
 
         $bindings = array_merge(
@@ -135,6 +167,9 @@ class BaseTable
         );
 
         $sql = "UPDATE {$this->table} SET $setClause WHERE $whereClause";
+        $this->lastQuery = $sql;
+        $this->lastBindings = $bindings;
+
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute($bindings);
     }
@@ -142,7 +177,11 @@ class BaseTable
     public function delete(array $where)
     {
         $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($where)));
-        $stmt = $this->pdo->prepare("DELETE FROM {$this->table} WHERE $whereClause");
+        $sql = "DELETE FROM {$this->table} WHERE $whereClause";
+        $this->lastQuery = $sql;
+        $this->lastBindings = $where;
+
+        $stmt = $this->pdo->prepare($sql);
         return $stmt->execute($where);
     }
 
@@ -154,5 +193,20 @@ class BaseTable
     public function toJson($data)
     {
         return json_encode($this->toArray($data));
+    }
+
+    public function getLastQuery($withBindings = false)
+    {
+        if (!$withBindings) {
+            return $this->lastQuery;
+        }
+
+        $query = $this->lastQuery;
+        foreach ($this->lastBindings as $key => $value) {
+            $pattern = '/:' . preg_quote($key, '/') . '\b/';
+            $replacement = is_numeric($value) ? $value : $this->pdo->quote($value);
+            $query = preg_replace($pattern, $replacement, $query);
+        }
+        return $query;
     }
 }

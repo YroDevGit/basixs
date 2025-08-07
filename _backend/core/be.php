@@ -252,7 +252,8 @@ if (! function_exists("pdo")) {
                 error_response(["code" => "404", "status" => "notfound", "message" => "No database found. please check .env file"]);
             }
             if ($pdo == null) {
-                $pdo = new PDO("mysql:host=$host;dbname=$dbname", "$user", "$pass", [
+                $dbdriver = getenv("dbdriver") == null ? "mysql" : getenv("dbdriver");
+                $pdo = new PDO("$dbdriver:host=$host;dbname=$dbname", "$user", "$pass", [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_EMULATE_PREPARES => false,
@@ -340,7 +341,7 @@ if (!function_exists('execute_select')) {
     {
         $stmt = null;
         try {
-            $pdo  = pdo(); // Your own PDO factory/helper
+            $pdo  = pdo(); 
             $stmt = $pdo->prepare($query);
 
             foreach ($params as $key => $value) {
@@ -488,7 +489,7 @@ if (! function_exists("execute_insert")) {
         $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
         $stmt = null;
         try {
-            $pdo  = pdo(); // Your own PDO factory/helper
+            $pdo  = pdo(); 
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array_values($data));
             $lastInsertId = $pdo->lastInsertId();
@@ -530,7 +531,7 @@ if (! function_exists("execute_update")) {
         $params = array_merge(array_values($data), array_values($where));
 
         try {
-            $pdo  = pdo(); // Your own PDO factory/helper
+            $pdo  = pdo(); 
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
 
@@ -571,7 +572,7 @@ if (! function_exists("execute_delete")) {
         $sql = "DELETE FROM $table WHERE $whereClause";
 
         try {
-            $pdo  = pdo(); // Your own PDO factory/helper
+            $pdo  = pdo();
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array_values($where));
             $lastSQL = interpolate_query($sql, $where, "success");
@@ -581,7 +582,7 @@ if (! function_exists("execute_delete")) {
                 "status" => "success",
                 "message" => "Data deleted successfully",
                 "lastquery" => $lastSQL,
-                "rowcount" => 1,
+                "rowcount" => $stmt->rowCount(),
                 "data" => $where
             ]), "info");
 
@@ -590,7 +591,7 @@ if (! function_exists("execute_delete")) {
                 "status" => "success",
                 "message" => "Data deleted successfully",
                 "lastquery" => $lastSQL,
-                "rowcount" => 1,
+                "rowcount" => $stmt->rowCount(),
                 "data" => $where
             ];
         } catch (PDOException $e) {
