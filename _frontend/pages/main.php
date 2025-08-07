@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Basixs | The Most Basic PHP Framework</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="shortcut icon" href="<?=assets('bfavicon.png')?>" type="image/x-icon">
 
   <style>
     body {
@@ -19,7 +20,7 @@
 </head>
 <body class="h-screen flex flex-col justify-center items-center text-center px-4">
   <div class="glow text-6xl md:text-7xl font-bold mb-4">
-    Basixs v1.0.18
+    Basixs v1.0.19
   </div>
   <p class="text-xl md:text-2xl text-green-300 mb-8">
     The most basic PHP framework — clean, light, fast and beginner friendly.
