@@ -1,0 +1,94 @@
+docker-compose down
+docker-compose up --build
+
+docker build -t basixs-app .
+docker run -p 8080:80 basixs-app
+
+
+#single container (DEFAUL)
+docker build -t basixs-nginx .
+docker run -p 9000:80 basixs-nginx
+
+
+
+
+#dockerfile (Dockerfile)
+FROM php:8.2-fpm
+
+# Install system dependencies including Nginx
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    && docker-php-ext-install pdo pdo_mysql
+
+# Set working directory
+WORKDIR /var/www
+
+# Copy all app files
+COPY . .
+
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy supervisor config to run both services
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Expose web port
+EXPOSE 80
+
+# Start both nginx and php-fpm using Supervisor
+CMD ["/usr/bin/supervisord"]
+
+#end -----------------------------------------------------------------
+
+
+#nginx (nginx.conf)
+
+worker_processes 1;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+    keepalive_timeout 65;
+
+    server {
+        listen 80;
+        server_name localhost;
+
+        root /var/www;
+        index index.php index.html;
+
+        location / {
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        }
+
+        error_log  /var/log/nginx/error.log;
+        access_log /var/log/nginx/access.log;
+    }
+}
+
+#end ---------------------------------------------
+
+#supervisord (supervisord.conf)
+[supervisord]
+nodaemon=true
+
+[program:php-fpm]
+command=php-fpm
+
+[program:nginx]
+command=nginx -g "daemon off;"
+

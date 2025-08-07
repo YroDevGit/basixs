@@ -11,27 +11,29 @@ $filename = isset($arguments[2]) ? $arguments[2] : '';
 if ($route == "run") {
     include "_frontend/core/loadenv.php";
     $host = getenv("rootpath");
-    if($host == null){
+    if ($host == null) {
         echo "❌ ERROR: 'rootpath' has no value (.env file)\n";
         echo "💡 You can use: http://localhost:9999 as rootpath\n\n";
         exit;
     }
-    $dir = getenv("dir");
-    if ($dir == null) {
-        echo "❌ ERROR: 'dir' has no value (.env file)\n";
-        echo "💡 Put root folder name as your dir\n\n";
-        exit;
-    }
-    $dir = realpath(__DIR__ . '/../../../' . $dir);
+    $dir = getenv("main_dir");
+    $dir_msg = "";
+    $dir_comm = "";
+    if ($dir != null) {
+        $dir = realpath(__DIR__ . '/../../../' . $dir);
 
-    if (!is_dir($dir)) {
-        echo "❌ Directory $dir does not exist.\n";
-        exit(1);
+        if (!is_dir($dir)) {
+            echo "❌ Directory $dir does not exist.\n";
+            exit(1);
+        }
+        $dir_comm = " -t \"$dir\"";
+        $dir_msg = "📁 Document root: $dir\n";
     }
+
 
     echo "\n⚡⚡ Basixs Framework by CodeYRO⚡⚡\n\n";
     echo "🔄 Serving at $host\n";
-    echo "📁 Document root: $dir\n";
+    echo $dir_msg;
     echo "--You can stop server by CTRL+C on your console\n\n";
 
     $exp = explode("//", $host);
@@ -39,7 +41,8 @@ if ($route == "run") {
 
     $phpPath = PHP_BINARY;
 
-    $cmd = "\"$phpPath\" -S $runner -t \"$dir\"";
+    $cmd = "php -S $runner".$dir_comm;
+    echo $cmd."\n";
     passthru($cmd);
     exit;
 }
