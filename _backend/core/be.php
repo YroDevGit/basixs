@@ -239,7 +239,7 @@ if (! function_exists("has_internet_connection")) {
 
 if (! function_exists("pdo")) {
     /** (Any) returns the value of the get */
-    function pdo($db = null)
+    function pdo($db = null, $no_database = false)
     {
         static $pdo = null;
         try {
@@ -253,7 +253,11 @@ if (! function_exists("pdo")) {
             }
             if ($pdo == null) {
                 $dbdriver = getenv("dbdriver") == null ? "mysql" : getenv("dbdriver");
-                $pdo = new PDO("$dbdriver:host=$host;dbname=$dbname", "$user", "$pass", [
+                $ddb = "dbname=$dbname";
+                if($no_database){
+                    $ddb = "";
+                }
+                $pdo = new PDO("$dbdriver:host=$host;$ddb", "$user", "$pass", [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_EMULATE_PREPARES => false,

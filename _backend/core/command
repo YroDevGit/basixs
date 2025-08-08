@@ -41,11 +41,58 @@ if ($route == "run") {
 
     $phpPath = PHP_BINARY;
 
-    $cmd = "php -S $runner".$dir_comm;
-    echo $cmd."\n";
+    $cmd = "php -S $runner" . $dir_comm;
+    echo $cmd . "\n";
     passthru($cmd);
     exit;
 }
+
+if ($route == "dbload") {
+    include "_frontend/core/loadenv.php";
+    $dbname = getenv("database");
+    if ($dbname == null || $dbname == "") {
+        echo "❌ database not found @ .env file\n";
+        exit;
+    }
+    include "_backend/core/be.php";
+    try {
+        $pdo = pdo($dbname, true);
+        $stmnt = $pdo->prepare("Create database `$dbname`;");
+        $stmnt->execute();
+        $rowcount = $stmnt->rowCount();
+        echo "✔️ Database $dbname created";
+        exit;
+    } catch (PDOException $e) {
+        echo "❌ " . $e->getMessage();
+        exit;
+    }
+}
+
+if ($route == "+dbtable") {
+    if ($filename == "") {
+        echo "❌ Please provide a table name.\n";
+        exit(1);
+    }
+    include "_frontend/core/loadenv.php";
+    $dbname = getenv("database");
+    if ($dbname == null || $dbname == "") {
+        echo "❌ database not found @ .env file\n";
+        exit;
+    }
+    include "_backend/core/be.php";
+    try {
+        $pdo = pdo($dbname);
+        $stmnt = $pdo->prepare("Create table `$filename` (id int(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ");
+        $stmnt->execute();
+        $row = $stmnt->rowCount();
+        echo "✔️ Table $filename created";
+        exit;
+    } catch (PDOException $e) {
+        echo "❌ " . $e->getMessage();
+        exit;
+    }
+}
+
 if ($route == "+base") {
     if ($filename == "") {
         echo "❌ Please provide a filename for the base.\n";
