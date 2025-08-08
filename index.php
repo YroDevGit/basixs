@@ -62,13 +62,17 @@ if ($bee) {
     $bee = $bb[0];
     $param = isset($bb[1]) ? $bb[1] : "";
     $bee = substr($bee, -4) == ".php" ? $bee : $bee . ".php";
+    $bax = $bee;
+    if (substr($bee, -4) === '.php') {
+        $bax = substr($bee, 0, -4);
+    }
     if (!file_exists("_backend/_routes/$bee")) {
         header('Content-Type: application/json');
         http_response_code(getenv("notfound_code"));
         echo json_encode([
             "code" => getenv("notfound_code"),
             "status" => "error",
-            "message" => "Backend route $bee not found",
+            "message" => "Backend route $bax not found",
             "data" => []
         ]);
         exit;
