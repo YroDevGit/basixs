@@ -9,10 +9,21 @@
  * By CodeYro - Tyrone Lee Emz
  */
 
-if(! function_exists("autoload_php")){
-    function autoload_php(string $filename){
-        $loadpage = substr($filename, -4)==".php" ? $filename : $filename.".php";
-        include "_frontend/auto/php/".$loadpage;
+if (! function_exists("autoload_php")) {
+    function autoload_php(string|array $filename=null)
+    {
+        if(!$filename){
+            return false;
+        }
+        if (is_array($filename)) {
+            foreach ($filename as $f) {
+                $loadpage = substr($f, -4) == ".php" ? $f : $f . ".php";
+                include "_frontend/auto/php/" . $loadpage;
+            }
+        } else {
+            $loadpage = substr($filename, -4) == ".php" ? $filename : $filename . ".php";
+            include "_frontend/auto/php/" . $loadpage;
+        }
     }
 }
 
