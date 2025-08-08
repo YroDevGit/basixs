@@ -74,13 +74,13 @@ export class Tyrux {
                 } else {
                     if (this.#config?.error) {
                         if (this.#config.error === "console") {
-                            console.error(xhr.statusText, responseData);
+                            console.error(responseData.message ?? xhr.statusText);
                         }
                         if (this.#config.error === "alert") {
-                            alert(xhr.statusText);
+                            alert(responseData.message ?? xhr.statusText);
                         }
                         if (this.#config.error === "log") {
-                            console.log(xhr.statusText, responseData);
+                            console.log(responseData.message ?? xhr.statusText);
                         }
                     }
                     options.error?.(responseData, xhr);

@@ -63,8 +63,10 @@ if ($bee) {
     $param = isset($bb[1]) ? $bb[1] : "";
     $bee = substr($bee, -4) == ".php" ? $bee : $bee . ".php";
     if (!file_exists("_backend/_routes/$bee")) {
+        header('Content-Type: application/json');
+        http_response_code(getenv("notfound_code"));
         echo json_encode([
-            "code" => 404,
+            "code" => getenv("notfound_code"),
             "status" => "error",
             "message" => "Backend route $bee not found",
             "data" => []
@@ -72,8 +74,10 @@ if ($bee) {
         exit;
     }
     if (!is_file("_backend/_routes/$bee")) {
+        header('Content-Type: application/json');
+        http_response_code(getenv("error_code"));
         echo json_encode([
-            "code" => 404,
+            "code" => getenv("error_code"),
             "status" => "error",
             "message" => "Backend route $bee is not a PHP file",
             "data" => []
@@ -94,14 +98,20 @@ if ($bee) {
         exit;
     } catch (Throwable  $e) {
         $err = BasixsErrorException($e, $bee);
+        header('Content-Type: application/json');
+        http_response_code(getenv("error_code"));
         echo json_encode($err);
         exit;
     }catch(InvalidArgumentException $e){
         $err = BasixsErrorException($e, $bee);
+        header('Content-Type: application/json');
+        http_response_code(getenv("error_code"));
         echo json_encode($err);
         exit;
     }catch(PDOException $e){
         $err = BasixsErrorException($e, $bee);
+        header('Content-Type: application/json');
+        http_response_code(getenv("success_code"));
         echo json_encode($err);
         exit;
     } finally {
