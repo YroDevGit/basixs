@@ -42,7 +42,6 @@ if ($route == "run") {
     $phpPath = PHP_BINARY;
 
     $cmd = "php -S $runner" . $dir_comm;
-    echo $cmd . "\n";
     passthru($cmd);
     exit;
 }
