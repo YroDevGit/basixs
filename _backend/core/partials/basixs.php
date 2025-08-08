@@ -92,8 +92,8 @@ function BasixsErrorException($e, $bee){
             "type" => $type,
             "error_code" => $hascode,
             "error_message" => $getMessage,
-            "msg" => $message,
-            "message" => $msg,
+            "msg" => $msg,
+            "message" => $message,
             "data" => []
         ];
         add_sql_log($getMessage, "be_errors", $hascode . " " . $bee);
