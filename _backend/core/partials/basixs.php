@@ -71,7 +71,7 @@ function decrypt($encrypted_data, string $key = null)
 }
 
 
-function BasixsErrorException($e, $bee)
+function BasixsErrorException($e, $bee, string $errorcode = "backend_error_code")
 {
     $arr = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
     shuffle($arr);
@@ -91,14 +91,14 @@ function BasixsErrorException($e, $bee)
     $env = getenv("environment") == null ? "dev" : getenv("environment");
     if (strtolower($env) == "prod" || strtolower($env) == "production" || strtolower($env) == "uat") {
         $err = [
-            "code" => getenv("backend_error_code"),
+            "code" => getenv($errorcode),
             "status" => "error",
             "message" => $message,
             "data" => []
         ];
     } else {
         $err = [
-            "code" => getenv("backend_error_code"),
+            "code" => getenv($errorcode),
             "status" => "error",
             "line" => $line,
             "file" => $file,

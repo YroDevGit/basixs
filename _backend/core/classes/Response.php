@@ -102,4 +102,13 @@ class Response
         ];
         self::json($response);
     }
+
+    static function dberror_response(string $message = "Database error", array $details=[]){
+        $response = [
+            "code" => getenv("db_error_code"),
+            "message" => $message,
+            "details" => $details
+        ];
+        self::json($response);
+    }
 }

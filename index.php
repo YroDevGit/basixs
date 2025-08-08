@@ -92,7 +92,7 @@ if ($bee) {
     basixs_param_getter($param);
     include("_backend/core/be.php");
     $folder_to_bee = '_backend/auto';
-    include_once $folder_to_bee."/loader.php";
+    include_once $folder_to_bee . "/loader.php";
     try {
         set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
@@ -100,22 +100,22 @@ if ($bee) {
 
         include("_backend/_routes/$bee");
         exit;
+    } catch (PDOException $e) {
+        $err = BasixsErrorException($e, $bee, "db_error_code");
+        header('Content-Type: application/json');
+        http_response_code(getenv("success_code"));
+        echo json_encode($err);
+        exit;
+    } catch (InvalidArgumentException $e) {
+        $err = BasixsErrorException($e, $bee);
+        header('Content-Type: application/json');
+        http_response_code(getenv("error_code"));
+        echo json_encode($err);
+        exit;
     } catch (Throwable  $e) {
         $err = BasixsErrorException($e, $bee);
         header('Content-Type: application/json');
         http_response_code(getenv("error_code"));
-        echo json_encode($err);
-        exit;
-    }catch(InvalidArgumentException $e){
-        $err = BasixsErrorException($e, $bee);
-        header('Content-Type: application/json');
-        http_response_code(getenv("error_code"));
-        echo json_encode($err);
-        exit;
-    }catch(PDOException $e){
-        $err = BasixsErrorException($e, $bee);
-        header('Content-Type: application/json');
-        http_response_code(getenv("success_code"));
         echo json_encode($err);
         exit;
     } finally {
