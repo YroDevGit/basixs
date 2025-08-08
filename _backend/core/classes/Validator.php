@@ -4,7 +4,7 @@ namespace Classes;
 
 class Validator
 {
-    public static $errors = [];
+    private static $errors = [];
     private static $failed = false;
 
     public function __construct() {
@@ -142,6 +142,10 @@ class Validator
 
     public static function failed(){
         return self::$failed;
+    }
+
+    public static function errors(){
+        return self::$errors;
     }
 
     /**
