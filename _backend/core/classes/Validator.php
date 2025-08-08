@@ -26,7 +26,7 @@ class Validator
             $postdata[$postname] = null;
         }
 
-        $value = trim($postdata[$postname]);
+        $value = trim($postdata[$postname]??'');
         $rulesArray = explode('|', $rules);
         $rulesArray = array_reverse($rulesArray);
 
