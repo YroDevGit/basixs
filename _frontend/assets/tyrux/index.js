@@ -1,7 +1,8 @@
 import { Tyrux } from "./lib/tyrux.js";
 
-const baseURL = "";  //Backend url end-point
-const baseRoute = "?be=";  // Your app default backend routing
+const baseURL = "";   //Backend url end-point
+const baseRoute = "";   // Default api rout
+const backend = "?be=";  // This app default backend path
 
 const headers = {
     Authorization: "Bearer sometoken" 
@@ -36,7 +37,10 @@ function get_form_data(selector) {
     return dataObject;
 }
 
+
+
 window.tyrux = tyrux;
 window.get_form_data = get_form_data;
 window.baseURL = baseURL;
 window.baseRoute = baseRoute;
+window.backend = backend;
