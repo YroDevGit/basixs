@@ -140,6 +140,10 @@ class Validator
         self::$failed = false;
     }
 
+    public static function failed(){
+        return self::$failed;
+    }
+
     /**
      * Helper to add an error and mark validation as failed.
      *
