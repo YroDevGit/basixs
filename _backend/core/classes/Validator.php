@@ -5,7 +5,7 @@ namespace Classes;
 class Validator
 {
     public static $errors = [];
-    public static $failed = false;
+    private static $failed = false;
 
     public function __construct() {
         self::reset();
