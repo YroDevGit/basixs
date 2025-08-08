@@ -1,9 +1,11 @@
 <?php
+namespace Classes;
+
 class Cors
 {
 
 
-    public function allow_origin(array $allowed, callable $error)
+    public static function allow_origin(array $allowed, callable $error)
     {
         $allowed_origins = $allowed;
 
@@ -24,5 +26,9 @@ class Cors
             http_response_code(200);
             exit;
         }
+    }
+
+    public static function set_request_method($method){
+        set_request_method($method);
     }
 }
