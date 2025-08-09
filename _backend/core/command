@@ -253,6 +253,35 @@ if ($route == "+model") {
             exit(1);
         }
     }
+} else if ($route == "what") {
+    if ($filename == "") {
+        echo "❌ parameter not found for (what) command.\n";
+        exit(1);
+    }
+    if ($filename == "frontend" || $filename == "backend") {
+        include "_frontend/core/loadenv.php";
+        $hostserver = null;
+        $ext = "";
+        if (getenv("rootpath") == null || getenv("rootpath") == "") {
+            $ext = basename(realpath(__DIR__ . '/../..'));
+            $hostserver = "http://localhost/$ext";
+        } else {
+            $hostserver = getenv("rootpath");
+        }
+        if ($filename == "frontend") {
+            echo $hostserver . "?page=\n";
+            exit;
+        }
+        if ($filename == "backend") {
+            echo $hostserver . "?be=\n";
+            exit;
+        }
+    }
+    if ($filename == "db" || $filename == "database") {
+        include "_frontend/core/loadenv.php";
+        echo getenv("database") == null ? "No database yet" : getenv("database");
+        exit;
+    }
 } else {
     echo "Invalid command.\n";
     exit(1);
