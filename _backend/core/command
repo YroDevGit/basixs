@@ -32,7 +32,7 @@ if ($route == "run") {
 
 
     echo "\n⚡⚡ Basixs Framework by CodeYRO⚡⚡\n\n";
-    echo "🔄 Serving at $host\n";
+    echo "🔄 Serving at "."\033[41m$host\033[0m\n"."\n";
     echo $dir_msg;
     echo "--You can stop server by CTRL+C on your console\n\n";
 
@@ -269,17 +269,17 @@ if ($route == "+model") {
             $hostserver = getenv("rootpath");
         }
         if ($filename == "frontend") {
-            echo $hostserver . "?page=\n";
+            echo "🔗 Front-End URL:  " ."\033[32m$hostserver?page=\033[0m\n";
             exit;
         }
         if ($filename == "backend") {
-            echo $hostserver . "?be=\n";
+            echo "🔗 Back-End URL:  " ."\033[32m$hostserver?be=\033[0m\n";
             exit;
         }
     }
     if ($filename == "db" || $filename == "database") {
         include "_frontend/core/loadenv.php";
-        echo getenv("database") == null ? "No database yet" : getenv("database");
+        echo getenv("database") == null ? "❌ No database yet" : "🗃️  Your Database:  ".getenv("database");
         exit;
     }
 } else {
