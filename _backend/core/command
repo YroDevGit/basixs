@@ -223,7 +223,7 @@ if ($route == "+model") {
 
     $phpContent = <<<EOT
     <?php 
-        //Add codes here...
+    //Add codes here...
 
 
     ?>
