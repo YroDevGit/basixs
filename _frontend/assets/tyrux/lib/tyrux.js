@@ -71,6 +71,7 @@ export class Tyrux {
 
                 if (xhr.status >= 200 && xhr.status < 300) {
                     options.success?.(responseData, xhr);
+                    options.response?.(responseData, xhr);
                 } else {
                     if (this.#config?.error) {
                         if (this.#config.error === "console") {
