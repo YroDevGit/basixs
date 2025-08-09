@@ -49,6 +49,23 @@ if(! function_exists("import_jquery")){
         <?php
     }
 }
+
+if(! function_exists("import_tyrux")){
+    function import_tyrux(){
+        $tyrux = assets("tyrux/index.js");
+        return '<script type="module">import "./'.$tyrux.'";</script>';
+    }
+}
+
+if(! function_exists("import_bundle")){
+    function import_bundle(){
+        ?>
+        <link rel="stylesheet" href="<?=assets('code/vendor.bundle.base.css')?>" />
+        <script src="<?=assets('code/vendor.bundle.base.js')?>"></script>
+        <?php
+    }
+}
+
 if(! function_exists("import_datatable")){
     function import_datatable(){
         ?>

@@ -20,12 +20,11 @@
 </head>
 <body class="h-screen flex flex-col justify-center items-center text-center px-4">
   <div class="glow text-6xl md:text-7xl font-bold mb-4">
-    Basixs v1.0.44
+    Basixs v1.0.45
   </div>
   <p class="text-xl md:text-2xl text-green-300 mb-8">
     The most basic PHP framework — clean, light, fast and beginner friendly.
   </p>
-
   <div class="flex gap-4">
     <a href="https://github.com/YroDevGit/basixs" class="bg-transparent border border-green-400 text-green-300 px-6 py-2 hover:bg-green-700 transition">
       Visit
