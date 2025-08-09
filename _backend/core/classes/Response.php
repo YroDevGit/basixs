@@ -13,7 +13,7 @@ class Response
         exit;
     }
 
-    static function success_response(string $message = "Success", array $details=[]){
+    static function success(string $message = "Success", array $details=[]){
         $response = [
             "code" => getenv("success_code"),
             "message" => $message,
@@ -22,7 +22,7 @@ class Response
         self::json($response);
     }
 
-    static function error_response(string $message = "Error", array $details=[]){
+    static function error(string $message = "Error", array $details=[]){
         $response = [
             "code" => getenv("error_code"),
             "message" => $message,
@@ -31,7 +31,7 @@ class Response
         self::json($response);
     }
 
-    static function failed_response(string $message = "Failed", array $details=[]){
+    static function failed(string $message = "Failed", array $details=[]){
         $response = [
             "code" => getenv("failed_code"),
             "message" => $message,
@@ -40,7 +40,7 @@ class Response
         self::json($response);
     }
 
-    static function notfound_response(string $message = "Not found", array $details=[]){
+    static function not_found(string $message = "Not found", array $details=[]){
         $response = [
             "code" => getenv("notfound_code"),
             "message" => $message,
@@ -49,7 +49,7 @@ class Response
         self::json($response);
     }
 
-    static function forbidden_response(string $message = "Forbidden", array $details=[]){
+    static function forbidden(string $message = "Forbidden", array $details=[]){
         $response = [
             "code" => getenv("forbidden_code"),
             "message" => $message,
@@ -58,7 +58,7 @@ class Response
         self::json($response);
     }
 
-    static function unauthorized_response(string $message = "Unauthorized", array $details=[]){
+    static function unauthorized(string $message = "Unauthorized", array $details=[]){
         $response = [
             "code" => getenv("unauthorized_code"),
             "message" => $message,
@@ -67,7 +67,7 @@ class Response
         self::json($response);
     }
 
-    static function badrequest_response(string $message = "Bad Request", array $details=[]){
+    static function bad_request(string $message = "Bad Request", array $details=[]){
         $response = [
             "code" => getenv("badrequest_code"),
             "message" => $message,
@@ -76,7 +76,7 @@ class Response
         self::json($response);
     }
 
-    static function warning_response(string $message = "Warning", array $details=[]){
+    static function warning(string $message = "Warning", array $details=[]){
         $response = [
             "code" => getenv("warning_code"),
             "message" => $message,
@@ -85,7 +85,7 @@ class Response
         self::json($response);
     }
 
-    static function networkerror_response(string $message = "Network error", array $details=[]){
+    static function network_error(string $message = "Network error", array $details=[]){
         $response = [
             "code" => getenv("no_internet_code"),
             "message" => $message,
@@ -94,7 +94,7 @@ class Response
         self::json($response);
     }
 
-    static function servererror_response(string $message = "Server error", array $details=[]){
+    static function server_error(string $message = "Server error", array $details=[]){
         $response = [
             "code" => getenv("backend_error_code"),
             "message" => $message,
@@ -103,7 +103,7 @@ class Response
         self::json($response);
     }
 
-    static function dberror_response(string $message = "Database error", array $details=[]){
+    static function db_error(string $message = "Database error", array $details=[]){
         $response = [
             "code" => getenv("db_error_code"),
             "message" => $message,
