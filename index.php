@@ -135,53 +135,73 @@ $get = $_GET['page'] ?? $_GET['p'] ?? $_GET['fe'] ?? $_GET['frontend'] ?? false;
 $folder_to_fee = '_frontend/auto';
 
 
-if ($get) {
-    if (strpos($get, '..') !== false || strpos($get, './') !== false) {
-        die("Invalid page request! - CodeYro Basixs");
-    }
+try {
+    if ($get) {
+        if (strpos($get, '..') !== false || strpos($get, './') !== false) {
+            die("Invalid page request! - CodeYro Basixs");
+        }
 
 
-    $bb = explode("?", $get);
-    $bee = $bb[0];
-    $param = isset($bb[1]) ? $bb[1] : "";
-    $get = substr($bee, -4) == ".php" ? $bee : $bee . ".php";
-    if (!file_exists("_frontend/pages/$get")) {
-        include("_frontend/errors/$page404");
-        exit;
-    }
-    if (!is_file("_frontend/pages/$get")) {
-        include("_frontend/errors/$page404");
-        exit;
-    }
-    $_SESSION['basixs_current_page'] = $get;
-    basixs_param_getter($param);
-
-    foreach (glob($folder_to_fee . '/*.php') as $filename) {
-        include_once $filename;
-    }
-    include("_frontend/pages/$get");
-    exit;
-} else {
-    if ($get == "" || $get == null || $get == false) {
-        $mainpage = php_file($mainpage);
-        if (!file_exists("_frontend/pages/$mainpage")) {
+        $bb = explode("?", $get);
+        $bee = $bb[0];
+        $param = isset($bb[1]) ? $bb[1] : "";
+        $get = substr($bee, -4) == ".php" ? $bee : $bee . ".php";
+        if (!file_exists("_frontend/pages/$get")) {
             include("_frontend/errors/$page404");
             exit;
         }
-        if (!is_file("_frontend/pages/$mainpage")) {
+        if (!is_file("_frontend/pages/$get")) {
             include("_frontend/errors/$page404");
             exit;
         }
-        $_SESSION['basixs_current_page'] = $mainpage;
+        $_SESSION['basixs_current_page'] = $get;
+        basixs_param_getter($param);
 
         foreach (glob($folder_to_fee . '/*.php') as $filename) {
             include_once $filename;
         }
-        include("_frontend/pages/$mainpage");
+        include("_frontend/pages/$get");
         exit;
     } else {
-        die("Page not found!");
+        if ($get == "" || $get == null || $get == false) {
+            $mainpage = php_file($mainpage);
+            if (!file_exists("_frontend/pages/$mainpage")) {
+                include("_frontend/errors/$page404");
+                exit;
+            }
+            if (!is_file("_frontend/pages/$mainpage")) {
+                include("_frontend/errors/$page404");
+                exit;
+            }
+            $_SESSION['basixs_current_page'] = $mainpage;
+
+            foreach (glob($folder_to_fee . '/*.php') as $filename) {
+                include_once $filename;
+            }
+            include("_frontend/pages/$mainpage");
+            exit;
+        } else {
+            die("Page not found!");
+        }
     }
+} catch (Throwable $e) {
+    $explode = explode("_frontend", json_encode($e->getFile()));
+    $file = $explode[1];
+    $fileError = "";
+    $env = getenv("environment") == null ? "dev" : getenv("environment");
+    if (strtolower($env) == "prod" || strtolower($env) == "production" || strtolower($env) == "uat") {
+        $fileError = $e->getMessage();
+    } else {
+        $fileError = $e->getMessage() . "\n" . $file . "\nLine: " . $e->getLine();
+    }
+?>
+    <script>
+        setTimeout(() => {
+            alert(<?= json_encode($fileError) ?>)
+        }, 1000)
+    </script>
+<?php
+    exit;
 }
 
 ?>
