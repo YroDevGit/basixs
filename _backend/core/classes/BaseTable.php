@@ -381,6 +381,27 @@ class BaseTable
         return null;
     }
 
+    public function excepts(string|array $key = null)
+    {
+        $attributes = $this->toArray();
+
+        if ($key === null) {
+            return $attributes;
+        }
+
+        if (is_string($key)) {
+            unset($attributes[$key]);
+            return $attributes;
+        }
+
+        if (is_array($key)) {
+            return array_diff_key($attributes, array_flip($key));
+        }
+
+        return $attributes;
+    }
+
+
 
     public function toJson()
     {
