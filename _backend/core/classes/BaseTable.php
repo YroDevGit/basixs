@@ -1,5 +1,7 @@
 <?php
+
 namespace Classes;
+
 /**
  * This is Basixs BaseTable Extension
  * this is like table models ORM
@@ -10,35 +12,74 @@ class BaseTable
     protected $pdo;
     protected $table;
     protected $fillable = [];
+    protected $guarded = [];
     protected $timestamps = true;
     protected $hidden = [];
     protected $rowcount;
     protected $lastQuery;
     protected $lastBindings;
 
-    public function __construct()
+    protected $attributes = [];
+
+    public function __construct(array $attributes = [])
     {
         $this->pdo = pdo();
+        $this->attributes = $attributes;
     }
 
-    protected function filterFillable($data)
+    public function __get($key)
     {
-        return array_filter(
-            $data,
-            fn($key) => in_array($key, $this->fillable),
-            ARRAY_FILTER_USE_KEY
-        );
+        return $this->attributes[$key] ?? null;
     }
 
-    protected function hydrate($row)
+    public function __set($key, $value)
+    {
+        $this->attributes[$key] = $value;
+    }
+
+
+    protected function filterFillable(array $data): array
+    {
+        if (!empty($this->fillable)) {
+            return array_filter(
+                $data,
+                fn($key) => in_array($key, $this->fillable),
+                ARRAY_FILTER_USE_KEY
+            );
+        }
+
+        if (!empty($this->guarded)) {
+            return array_filter(
+                $data,
+                fn($key) => !in_array($key, $this->guarded),
+                ARRAY_FILTER_USE_KEY
+            );
+        }
+
+        return $data;
+    }
+
+
+    protected function hydrate(array $row): array
     {
         return array_diff_key($row, array_flip($this->hidden));
     }
 
-    protected static function instance()
+
+    public static function filterHidden(array $data, array $hiddenKeys = []): array
     {
-        return new static();
+        if (empty($hiddenKeys)) {
+            return $data;
+        }
+        return array_diff_key($data, array_flip($hiddenKeys));
     }
+
+
+    protected static function instance(array $attributes = [])
+    {
+        return new static($attributes);
+    }
+
 
     public static function all()
     {
@@ -49,10 +90,12 @@ class BaseTable
         $self->lastBindings = [];
 
         $stmt = $self->pdo->query($sql);
-        $rows = $stmt->fetchAll(2);
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         $self->rowcount = $stmt->rowCount();
+
         return array_map([$self, 'hydrate'], $rows);
     }
+
 
     public static function find($id)
     {
@@ -64,17 +107,19 @@ class BaseTable
 
         $stmt = $self->pdo->prepare($sql);
         $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch(2);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         $self->rowcount = $stmt->rowCount();
+
         return $row ? $self->hydrate($row) : null;
     }
 
-    public static function where($conditions)
+
+    public static function where(array $conditions)
     {
         $self = static::instance();
 
         if (!is_array($conditions)) {
-            throw new InvalidArgumentException("Where conditions must be an associative array.");
+            throw new \InvalidArgumentException("Where conditions must be an associative array.");
         }
 
         $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
@@ -84,17 +129,19 @@ class BaseTable
 
         $stmt = $self->pdo->prepare($sql);
         $stmt->execute($conditions);
-        $rows = $stmt->fetchAll(2);
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         $self->rowcount = $stmt->rowCount();
+
         return array_map([$self, 'hydrate'], $rows);
     }
 
-    public static function first($conditions = [])
+
+    public static function first(array $conditions = [])
     {
         $self = static::instance();
 
         if (!is_array($conditions)) {
-            throw new InvalidArgumentException("First conditions must be an associative array.");
+            throw new \InvalidArgumentException("First conditions must be an associative array.");
         }
 
         if (empty($conditions)) {
@@ -114,17 +161,19 @@ class BaseTable
             $stmt->execute($conditions);
         }
 
-        $row = $stmt->fetch(2);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         $self->rowcount = $stmt->rowCount();
+
         return $row ? $self->hydrate($row) : null;
     }
 
-    public static function last($conditions = [])
+
+    public static function last(array $conditions = [])
     {
         $self = static::instance();
 
         if (!is_array($conditions)) {
-            throw new InvalidArgumentException("Last conditions must be an associative array.");
+            throw new \InvalidArgumentException("Last conditions must be an associative array.");
         }
 
         if (empty($conditions)) {
@@ -144,19 +193,23 @@ class BaseTable
             $stmt->execute($conditions);
         }
 
-        $row = $stmt->fetch(2);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         $self->rowcount = $stmt->rowCount();
+
         return $row ? $self->hydrate($row) : null;
     }
+
 
     public static function create(array $data)
     {
         $self = static::instance();
+
         $data = $self->filterFillable($data);
 
         if ($self->timestamps) {
-            $data['created_at'] = date('Y-m-d H:i:s');
-            $data['updated_at'] = date('Y-m-d H:i:s');
+            $now = date('Y-m-d H:i:s');
+            $data['created_at'] = $now;
+            $data['updated_at'] = $now;
         }
 
         $columns = array_keys($data);
@@ -169,12 +222,16 @@ class BaseTable
         $stmt = $self->pdo->prepare($sql);
         $stmt->execute($data);
         $self->rowcount = 1;
-        return $self->find($self->pdo->lastInsertId());
+
+        $insertedRow = $self->find($self->pdo->lastInsertId());
+
+        return $insertedRow ? static::instance($insertedRow) : null;
     }
 
     public static function update(array $where, array $data)
     {
         $self = static::instance();
+
         $data = $self->filterFillable($data);
 
         if ($self->timestamps) {
@@ -199,12 +256,15 @@ class BaseTable
         $stmt = $self->pdo->prepare($sql);
         $return = $stmt->execute($bindings);
         $self->rowcount = $stmt->rowCount();
+
         return $return;
     }
+
 
     public static function delete(array $where)
     {
         $self = static::instance();
+
         $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($where)));
         $sql = "DELETE FROM {$self->table} WHERE $whereClause";
         $self->lastQuery = $sql;
@@ -213,21 +273,24 @@ class BaseTable
         $stmt = $self->pdo->prepare($sql);
         $return  = $stmt->execute($where);
         $self->rowcount = $stmt->rowCount();
+
         return $return;
     }
 
-    public static function toArray($data)
+    public static function toFilteredArray(array $data)
     {
         $self = static::instance();
-        return array_diff_key($data, array_flip($self->hidden));
+        return self::filterHidden($data, $self->hidden);
     }
 
-    public static function toJson($data)
+
+    public static function jsonEncode(array $data)
     {
-        return json_encode(static::toArray($data));
+        return json_encode(static::toFilteredArray($data));
     }
 
-    public static function getLastQuery($withBindings = false)
+
+    public static function getLastQuery(bool $withBindings = false)
     {
         $self = static::instance();
 
@@ -244,9 +307,51 @@ class BaseTable
         return $query;
     }
 
+
     public static function rowCount()
     {
         $self = static::instance();
         return $self->rowcount ?? 0;
+    }
+
+
+    public function save()
+    {
+        $id = $this->attributes['id'] ?? null;
+
+        $data = $this->attributes;
+
+        unset(
+            $data['pdo'],
+            $data['table'],
+            $data['fillable'],
+            $data['guarded'],
+            $data['timestamps'],
+            $data['hidden'],
+            $data['rowcount'],
+            $data['lastQuery'],
+            $data['lastBindings']
+        );
+
+        if ($id) {
+            return static::update(['id' => $id], $data);
+        } else {
+            $newInstance = static::create($data);
+            if ($newInstance) {
+                $this->attributes = $newInstance->attributes;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public function toArray()
+    {
+        return array_diff_key($this->attributes, array_flip($this->hidden));
+    }
+
+    public function toJson()
+    {
+        return json_encode($this->toArray());
     }
 }

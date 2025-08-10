@@ -10,8 +10,53 @@ class DB
     private static $lastData;
     private static $lastTable;
 
+    private static $allowedColumns = null;
+    private static $hiddenColumns = null;
+
+    public static function interface(array $columns)
+    {
+        self::$allowedColumns = $columns;
+        return new static;
+    }
+
+    public static function hide(array $columns)
+    {
+        self::$hiddenColumns = $columns;
+        return new static;
+    }
+
+    private static function resetColumnFilters()
+    {
+        self::$allowedColumns = null;
+        self::$hiddenColumns = null;
+    }
+
+    private static function filterInsertData(array $data)
+    {
+        if (self::$allowedColumns !== null) {
+            $data = array_intersect_key($data, array_flip(self::$allowedColumns));
+        }
+        return $data;
+    }
+
+    private static function filterResultArray(array $results)
+    {
+        if (self::$hiddenColumns !== null) {
+            foreach ($results as &$row) {
+                foreach (self::$hiddenColumns as $col) {
+                    if (array_key_exists($col, $row)) {
+                        unset($row[$col]);
+                    }
+                }
+            }
+        }
+        return $results;
+    }
+
     public static function insert(string $table, array $data)
     {
+        $data = self::filterInsertData($data);
+
         $columns = implode(", ", array_keys($data));
         $placeholders = implode(", ", array_fill(0, count($data), "?"));
         $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
@@ -30,6 +75,8 @@ class DB
         $id = $pdo->lastInsertId();
         $stmt->closeCursor();
         $stmt = null;
+
+        self::resetColumnFilters();
         return $id ?? null;
     }
 
@@ -51,11 +98,15 @@ class DB
         self::$lastRowCount = $rowCount;
         $stmt->closeCursor();
         $stmt = null;
+
+        self::resetColumnFilters();
         return $rowCount;
     }
 
     public static function update(string $table, array $data, array $where)
     {
+        $data = self::filterInsertData($data);
+
         $setClause = implode(", ", array_map(fn($col) => "$col = ?", array_keys($data)));
         $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", array_keys($where)));
         $sql = "UPDATE $table SET $setClause WHERE $whereClause";
@@ -66,7 +117,7 @@ class DB
 
         self::$lastQuery = $sql;
         self::$lastBindings = $params;
-        self::$lastData = ["data"=>$data, "where"=>$where];
+        self::$lastData = ["data" => $data, "where" => $where];
         self::$lastTable =  $table;
 
         $stmt->execute($params);
@@ -74,11 +125,12 @@ class DB
         self::$lastRowCount = $rowCount;
         $stmt->closeCursor();
         $stmt = null;
+
+        self::resetColumnFilters();
         return $rowCount;
     }
 
-
-    static function query(string $sql, array $params=[])
+    static function query(string $sql, array $params = [])
     {
         $stmt = null;
         $pdo  = pdo();
@@ -102,6 +154,12 @@ class DB
         $rett = null;
         switch ($verb) {
             case 'SELECT':
+                self::$lastRowCount = $stmt->rowCount();
+                $results = $stmt->fetchAll(2);
+                $results = self::filterResultArray($results);
+                $rett = $results;
+                break;
+
             case 'SHOW':
             case 'DESCRIBE':
             case 'PRAGMA':
@@ -115,10 +173,6 @@ class DB
                 break;
 
             case 'UPDATE':
-                $rett = $stmt->rowCount();
-                self::$lastRowCount = $rett;
-                break;
-
             case 'DELETE':
                 $rett = $stmt->rowCount();
                 self::$lastRowCount = $rett;
@@ -131,12 +185,13 @@ class DB
 
         $stmt->closeCursor();
         $stmt = null;
+
+        self::resetColumnFilters();
         return $rett;
     }
 
-    static function select(string $table, array $where = [], array $columns = ["*"]):array
+    static function select(string $table, array $where = [], array $columns = ["*"]): array
     {
-        $stmt = null;
         $pdo = pdo();
 
         self::$lastQuery = null;
@@ -144,11 +199,11 @@ class DB
         self::$lastData = $where;
         self::$lastTable =  $table;
 
-        if (is_array($columns)) {
-            $columnList = implode(', ', $columns);
-        } else {
-            $columnList = $columns;
+        if (self::$allowedColumns !== null) {
+            $columns = self::$allowedColumns;
         }
+
+        $columnList = is_array($columns) ? implode(', ', $columns) : $columns;
         $query = "SELECT {$columnList} FROM {$table}";
 
         $params = [];
@@ -173,14 +228,15 @@ class DB
         }
 
         $stmt->execute();
-        $results = $stmt->fetchAll(2) ?? null;
-        $count = $stmt->rowCount();
-        self::$lastRowCount = $count;
+        $results = $stmt->fetchAll(2) ?? [];
+        $results = self::filterResultArray($results);
+
+        self::$lastRowCount = $stmt->rowCount();
         $stmt->closeCursor();
+
+        self::resetColumnFilters();
         return $results;
     }
-
-
 
     public static function getLastQuery($withBindings = false)
     {
@@ -208,21 +264,18 @@ class DB
         return $results[0] ?? null;
     }
 
-    public static function rowCount():int
+    public static function rowCount(): int
     {
-        if (!self::$lastRowCount) return 0;
-        return self::$lastRowCount;
+        return self::$lastRowCount ?? 0;
     }
 
-    public static function lastTable(){
-        if(! self::$lastTable) return null;
-        return self::$lastTable;
+    public static function lastTable()
+    {
+        return self::$lastTable ?? null;
     }
 
-    public static function lastData(){
-        if(! self::$lastData) return null;
-        return self::$lastData;
+    public static function lastData()
+    {
+        return self::$lastData ?? null;
     }
-
-    
 }
