@@ -97,25 +97,32 @@ class BaseTable
     }
 
 
-    public static function find($id)
+    public static function findOne(array $conditions)
     {
         $self = static::instance();
 
-        $sql = "SELECT * FROM {$self->table} WHERE id = :id LIMIT 1";
-        $self->lastQuery = $sql;
-        $self->lastBindings = ['id' => $id];
+        $data = $self->find($conditions);
+        if ($data) {
+            return $data;
+        }
+        return false;
+    }
 
-        $stmt = $self->pdo->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        $self->rowcount = $stmt->rowCount();
+    public static function get(array $where): array
+    {
+        $self = static::instance();
 
-        return $row ? $self->hydrate($row) : null;
+        $data = $self->find($where);
+        if (empty($data)) {
+            return [];
+        }
+        return $data;
     }
 
 
-    public static function where(array $conditions)
+    public static function find(array $where)
     {
+        $conditions = $where;
         $self = static::instance();
 
         if (!is_array($conditions)) {
@@ -130,8 +137,11 @@ class BaseTable
         $stmt = $self->pdo->prepare($sql);
         $stmt->execute($conditions);
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        $self->rowcount = $stmt->rowCount();
-
+        $rc = $stmt->rowCount();
+        $self->rowcount = $rc;
+        if ($rc == 0) {
+            return null;
+        }
         return array_map([$self, 'hydrate'], $rows);
     }
 
@@ -314,46 +324,6 @@ class BaseTable
     {
         $self = static::instance();
         return $self->rowcount ?? 0;
-    }
-
-
-    public function save()
-    {
-        $id = $this->attributes['id'] ?? null;
-
-        $data = $this->attributes;
-
-        unset(
-            $data['pdo'],
-            $data['table'],
-            $data['fillable'],
-            $data['guarded'],
-            $data['timestamps'],
-            $data['hidden'],
-            $data['rowcount'],
-            $data['lastQuery'],
-            $data['lastBindings']
-        );
-
-        if ($id) {
-            $success = static::update(['id' => $id], $data);
-            if ($success) {
-                // reload fresh data and update attributes
-                $fresh = static::find($id);
-                if ($fresh) {
-                    $this->attributes = $fresh;
-                }
-                return $this;
-            }
-            return false;
-        } else {
-            $newInstance = static::create($data);
-            if ($newInstance) {
-                $this->attributes = $newInsance->attributes;
-                return $this;
-            }
-            return false;
-        }
     }
 
 
