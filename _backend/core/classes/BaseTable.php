@@ -255,9 +255,10 @@ class BaseTable
 
         $stmt = $self->pdo->prepare($sql);
         $return = $stmt->execute($bindings);
-        $self->rowcount = $stmt->rowCount();
+        $rwCount = $stmt->rowCount();
+        $self->rowcount = $rwCount;
 
-        return $return;
+        return $rwCount;
     }
 
 
@@ -272,9 +273,10 @@ class BaseTable
 
         $stmt = $self->pdo->prepare($sql);
         $return  = $stmt->execute($where);
-        $self->rowcount = $stmt->rowCount();
+        $rwCount = $stmt->rowCount();
+        $self->rowcount = $rwCount;
 
-        return $return;
+        return $rwCount;
     }
 
     public static function toFilteredArray(array $data)
