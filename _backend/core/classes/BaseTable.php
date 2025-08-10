@@ -334,21 +334,51 @@ class BaseTable
         );
 
         if ($id) {
-            return static::update(['id' => $id], $data);
+            $success = static::update(['id' => $id], $data);
+            if ($success) {
+                // reload fresh data and update attributes
+                $fresh = static::find($id);
+                if ($fresh) {
+                    $this->attributes = $fresh;
+                }
+                return $this;
+            }
+            return false;
         } else {
             $newInstance = static::create($data);
             if ($newInstance) {
-                $this->attributes = $newInstance->attributes;
-                return true;
+                $this->attributes = $newInsance->attributes;
+                return $this;
             }
             return false;
         }
     }
 
+
     public function toArray()
     {
         return array_diff_key($this->attributes, array_flip($this->hidden));
     }
+
+    public function data(string|array|null $key = null)
+    {
+        $attributes = $this->toArray();
+
+        if ($key === null) {
+            return $attributes;
+        }
+
+        if (is_string($key)) {
+            return $attributes[$key] ?? null;
+        }
+
+        if (is_array($key)) {
+            return array_intersect_key($attributes, array_flip($key));
+        }
+
+        return null;
+    }
+
 
     public function toJson()
     {
