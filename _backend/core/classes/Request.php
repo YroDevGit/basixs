@@ -19,5 +19,13 @@ class Request{
         return self::post($key);
     }
 
+    static function headers(string|null $key = null){
+        return server_headers($key);
+    }
+
+    static function origin(){
+        return $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    }
+
 }
 ?>
