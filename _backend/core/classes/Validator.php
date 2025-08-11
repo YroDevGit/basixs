@@ -119,10 +119,20 @@ class Validator
                 self::addErrs($postname, "format is invalid.");
             }
 
-            // Advanced validations
-            if ($ruleName === 'match' && isset($_POST[$ruleParam]) && $value !== trim($_POST[$ruleParam])) {
-                self::addError($postname, "$label must match " . ucfirst(str_replace('_', ' ', $ruleParam)) . ".");
-                self::addErrs($postname, "must match " . ucfirst(str_replace('_', ' ', $ruleParam)) . ".");
+            if ($ruleName === 'match') {
+                $expectedValues = [];
+
+                if (isset($_POST[$ruleParam])) {
+                    $expectedValues[] = trim((string)$_POST[$ruleParam]);
+                } else {
+                    $expectedValues = array_map('trim', explode(',', $ruleParam));
+                }
+
+                if (!in_array((string)$value, $expectedValues, true)) {
+                    $expectedList = implode(', ', $expectedValues);
+                    self::addError($postname, "$label has invalid value.");
+                    self::addErrs($postname, "has invalid value.");
+                }
             }
 
             if ($ruleName === 'in' && $ruleParam !== null) {
