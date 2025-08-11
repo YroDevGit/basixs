@@ -46,6 +46,25 @@ if ($route == "run") {
     exit;
 }
 
+if($route == "dbmigrate"){
+    include "_frontend/core/loadenv.php";
+
+    if ($filename == "") {
+        echo "❌ Please filename for migration.\n";
+        exit(1);
+    }
+
+    include "_backend/core/be.php";
+    include "_backend/core/classes/Migration.php";
+    
+    $migFile = $filename;
+    if(! file_exists("_backend/core/database/$migFile.php")){
+        echo "❌ Invalid migration name\n";exit;
+    }
+    include "_backend/core/database/$migFile.php";
+    exit;
+}
+
 if ($route == "dbload") {
     include "_frontend/core/loadenv.php";
     $dbname = getenv("database");

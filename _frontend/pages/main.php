@@ -20,7 +20,7 @@
 </head>
 <body class="h-screen flex flex-col justify-center items-center text-center px-4">
   <div class="glow text-6xl md:text-7xl font-bold mb-4">
-    Basixs v1.0.73
+    Basixs v1.0.74
   </div>
   <p class="text-xl md:text-2xl text-green-300 mb-8">
     The most basic PHP framework — clean, light, fast and beginner friendly.
