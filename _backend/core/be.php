@@ -985,7 +985,8 @@ if (! function_exists("set_request_method")) {
     {
         $method = $_SERVER['REQUEST_METHOD'];
         if (strtoupper($req_method) != strtoupper($method)) {
-            json_badrequest(["error" => "Request method should be " . $req_method]);
+            $errmsg = "Request method should be " . strtoupper($req_method);
+            json_badrequest(["error" => $errmsg], $errmsg);
         }
     }
 }
