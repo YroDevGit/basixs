@@ -254,7 +254,7 @@ if (! function_exists("pdo")) {
             if ($pdo == null) {
                 $dbdriver = getenv("dbdriver") == null ? "mysql" : getenv("dbdriver");
                 $ddb = "dbname=$dbname";
-                if($no_database){
+                if ($no_database) {
                     $ddb = "";
                 }
                 $pdo = new PDO("$dbdriver:host=$host;$ddb", "$user", "$pass", [
@@ -345,7 +345,7 @@ if (!function_exists('execute_select')) {
     {
         $stmt = null;
         try {
-            $pdo  = pdo(); 
+            $pdo  = pdo();
             $stmt = $pdo->prepare($query);
 
             foreach ($params as $key => $value) {
@@ -493,7 +493,7 @@ if (! function_exists("execute_insert")) {
         $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
         $stmt = null;
         try {
-            $pdo  = pdo(); 
+            $pdo  = pdo();
             $stmt = $pdo->prepare($sql);
             $stmt->execute(array_values($data));
             $lastInsertId = $pdo->lastInsertId();
@@ -535,7 +535,7 @@ if (! function_exists("execute_update")) {
         $params = array_merge(array_values($data), array_values($where));
 
         try {
-            $pdo  = pdo(); 
+            $pdo  = pdo();
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
 
@@ -739,7 +739,7 @@ if (!function_exists('execute_query')) {
 }
 
 function db_start()
-{//Previous name: start_transaction
+{ //Previous name: start_transaction
     global $transaction_active;
     $pdo = pdo();
     if (!$pdo->inTransaction()) {
@@ -750,7 +750,7 @@ function db_start()
 
 
 function db_commit()
-{// Previous name: commit_transaction
+{ // Previous name: commit_transaction
     global $transaction_active;
     if ($transaction_active) {
         $pdo = pdo();
@@ -760,7 +760,7 @@ function db_commit()
 }
 
 function db_rollback()
-{// rollback_transaction
+{ // rollback_transaction
     global $transaction_active;
     if ($transaction_active) {
         $pdo = pdo();
@@ -898,9 +898,9 @@ if (! function_exists("set_sql_batch")) {
 }
 
 if (! function_exists("autoload_php")) {
-    function autoload_php(string|array $filename=null)
+    function autoload_php(string|array $filename = null)
     {
-        if(!$filename){
+        if (!$filename) {
             return false;
         }
         if (is_array($filename)) {
@@ -918,7 +918,7 @@ if (! function_exists("autoload_php")) {
 if (! function_exists("autoload_routing")) {
     function autoload_routing(string|array $filename)
     {
-        if(!$filename){
+        if (!$filename) {
             return false;
         }
         if (is_array($filename)) {
@@ -947,19 +947,23 @@ if (! function_exists("current_be")) {
 }
 
 if (! function_exists("server_headers")) {
-    function server_headers(String $key = null)
+    function server_headers(String $searchKey = null)
     {
         $headers = [];
-        foreach ($_SERVER as $key => $value) {
-            if (strpos($key, 'HTTP_') === 0) {
-                $header = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
+        foreach ($_SERVER as $serverKey => $value) {
+            if (strpos($serverKey, 'HTTP_') === 0) {
+                $header = str_replace(
+                    ' ',
+                    '-',
+                    ucwords(strtolower(str_replace('_', ' ', substr($serverKey, 5))))
+                );
                 $headers[$header] = $value;
             }
         }
-        if ($key == null) {
+        if ($searchKey === null) {
             return $headers;
         } else {
-            return $headers[$key] ?? null;
+            return $headers[$searchKey] ?? null;
         }
     }
 }
