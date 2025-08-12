@@ -91,4 +91,40 @@ export class Tyrux {
 
         xhr.send(data);
     }
+
+    post(option) {
+        option.method = "POST";
+        this.request(option);
+    }
+
+    put(option) {
+        option.method = "PUT";
+        this.request(option);
+    }
+
+    get(option) {
+        option.method = "GET";
+        this.request(option);
+    }
+
+    patch(option){
+        option.method = "PATCH";
+        this.request(option);
+    }
+
+    delete(option) {
+        option.method = "DELETE";
+        this.request(option);
+    }
+
+    head(option){
+        option.method = "HEAD";
+        this.request(option);
+    }
+
+    option(option){
+        option.method = "OPTIONS";
+        this.request(option);
+    }
+
 }
