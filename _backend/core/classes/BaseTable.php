@@ -302,7 +302,7 @@ class BaseTable
     }
 
 
-    public static function getLastQuery(bool $withBindings = false)
+    public static function getLastQuery(bool $withBindings = true)
     {
         $self = static::instance();
 

@@ -57,11 +57,10 @@ class DB
     {
         $data = self::filterInsertData($data);
 
-        $columns = implode(", ", array_keys($data));
+        $columns = implode(", ", array_map(fn($col) => "`$col`", array_keys($data)));
         $placeholders = implode(", ", array_fill(0, count($data), "?"));
-        $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
+        $sql = "INSERT INTO `$table` ($columns) VALUES ($placeholders)";
 
-        $stmt = null;
         $pdo = pdo();
         $stmt = $pdo->prepare($sql);
 
@@ -69,21 +68,21 @@ class DB
         self::$lastBindings = array_values($data);
         self::$lastRowCount = 1;
         self::$lastData = $data;
-        self::$lastTable =  $table;
+        self::$lastTable = $table;
 
         $stmt->execute(self::$lastBindings);
         $id = $pdo->lastInsertId();
         $stmt->closeCursor();
-        $stmt = null;
 
         self::resetColumnFilters();
-        return $id ?? null;
+        return $id ?: null;
     }
+
 
     public static function delete(string $table, array $where)
     {
-        $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", array_keys($where)));
-        $sql = "DELETE FROM $table WHERE $whereClause";
+        $whereClause = implode(" AND ", array_map(fn($col) => "`$col` = ?", array_keys($where)));
+        $sql = "DELETE FROM `$table` WHERE $whereClause";
 
         $pdo = pdo();
         $stmt = $pdo->prepare($sql);
@@ -107,9 +106,9 @@ class DB
     {
         $data = self::filterInsertData($data);
 
-        $setClause = implode(", ", array_map(fn($col) => "$col = ?", array_keys($data)));
-        $whereClause = implode(" AND ", array_map(fn($col) => "$col = ?", array_keys($where)));
-        $sql = "UPDATE $table SET $setClause WHERE $whereClause";
+        $setClause = implode(", ", array_map(fn($col) => "`$col` = ?", array_keys($data)));
+        $whereClause = implode(" AND ", array_map(fn($col) => "`$col` = ?", array_keys($where)));
+        $sql = "UPDATE `$table` SET $setClause WHERE $whereClause";
         $params = array_merge(array_values($data), array_values($where));
 
         $pdo = pdo();
@@ -203,15 +202,15 @@ class DB
             $columns = self::$allowedColumns;
         }
 
-        $columnList = is_array($columns) ? implode(', ', $columns) : $columns;
-        $query = "SELECT {$columnList} FROM {$table}";
+        $columnList = is_array($columns) ? implode(', ', array_map(fn($col) => $col !== '*' ? "`$col`" : $col, $columns)) : $columns;
+        $query = "SELECT {$columnList} FROM `$table`";
 
         $params = [];
         if (!empty($where)) {
             $whereClause = [];
             foreach ($where as $key => $value) {
                 $paramKey = ":" . $key;
-                $whereClause[] = "{$key} = {$paramKey}";
+                $whereClause[] = "`{$key}` = {$paramKey}";
                 $params[$paramKey] = $value;
             }
             $query .= " WHERE " . implode(" AND ", $whereClause);
@@ -238,7 +237,7 @@ class DB
         return $results;
     }
 
-    public static function getLastQuery($withBindings = false)
+    public static function getLastQuery($withBindings = true)
     {
         if (!self::$lastQuery) return null;
         if (!$withBindings) return self::$lastQuery;
