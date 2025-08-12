@@ -71,8 +71,9 @@ function decrypt($encrypted_data, string $key = null)
 }
 
 
+
 function BasixsErrorException($e, $bee, string $errorcode = "backend_error_code")
-{
+{   
     $arr = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
     shuffle($arr);
     $trace = $e->getTrace();
@@ -90,10 +91,13 @@ function BasixsErrorException($e, $bee, string $errorcode = "backend_error_code"
     $err = [];
     $env = getenv("environment") == null ? "dev" : getenv("environment");
     if (strtolower($env) == "prod" || strtolower($env) == "production" || strtolower($env) == "uat") {
+        include "_backend/core/library/PHPErrorClass.php";
+        $clearMSG = PHPErrorClass::error_message($e);
         $err = [
             "code" => getenv($errorcode),
             "status" => "error",
-            "message" => $message,
+            "message" => $clearMSG,
+            "msg" => $message,
             "data" => []
         ];
     } else {

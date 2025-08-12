@@ -233,7 +233,8 @@ class BaseTable
         $stmt->execute($data);
         $self->rowcount = 1;
 
-        $insertedRow = $self->find($self->pdo->lastInsertId());
+        $data['_id'] = $self->pdo->lastInsertId();
+        $insertedRow = $data;
 
         return $insertedRow ? static::instance($insertedRow) : null;
     }
@@ -302,7 +303,7 @@ class BaseTable
     }
 
 
-    public static function getLastQuery(bool $withBindings = true)
+    public static function getLastQuery(bool $withBindings = false)
     {
         $self = static::instance();
 
@@ -329,7 +330,18 @@ class BaseTable
 
     public function toArray()
     {
-        return array_diff_key($this->attributes, array_flip($this->hidden));
+        $data = $this->attributes;
+        unset($data['_id']);
+        return array_diff_key($data, array_flip($this->hidden));
+    }
+
+    public function insertID(){
+        $data = $this->attributes;
+        return $data['_id'] ?? null;
+    }
+
+    public function _id(){
+        return $this->insertID();
     }
 
     public function data(string|array|null $key = null)
