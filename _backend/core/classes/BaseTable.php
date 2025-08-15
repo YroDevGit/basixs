@@ -129,7 +129,7 @@ class BaseTable
             throw new \InvalidArgumentException("Where conditions must be an associative array.");
         }
 
-        $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
+        $whereClause = implode(' AND ', array_map(fn($col) => "`$col` = :$col", array_keys($conditions)));
         $sql = "SELECT * FROM {$self->table} WHERE $whereClause";
         $self->lastQuery = $sql;
         $self->lastBindings = $conditions;
@@ -162,7 +162,7 @@ class BaseTable
             $stmt = $self->pdo->prepare($sql);
             $stmt->execute();
         } else {
-            $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
+            $whereClause = implode(' AND ', array_map(fn($col) => "`$col` = :$col", array_keys($conditions)));
             $sql = "SELECT * FROM {$self->table} WHERE $whereClause LIMIT 1";
             $self->lastQuery = $sql;
             $self->lastBindings = $conditions;
@@ -194,7 +194,7 @@ class BaseTable
             $stmt = $self->pdo->prepare($sql);
             $stmt->execute();
         } else {
-            $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($conditions)));
+            $whereClause = implode(' AND ', array_map(fn($col) => "`$col` = :$col", array_keys($conditions)));
             $sql = "SELECT * FROM {$self->table} WHERE $whereClause ORDER BY id DESC LIMIT 1";
             $self->lastQuery = $sql;
             $self->lastBindings = $conditions;
@@ -222,8 +222,8 @@ class BaseTable
             $data['updated_at'] = $now;
         }
 
-        $columns = array_keys($data);
-        $placeholders = array_map(fn($col) => ":$col", $columns);
+        $columns = array_map(fn($col) => "`$col`", array_keys($data));
+        $placeholders = array_map(fn($col) => ":$col", array_keys($data));
 
         $sql = "INSERT INTO {$self->table} (" . implode(",", $columns) . ") VALUES (" . implode(",", $placeholders) . ")";
         $self->lastQuery = $sql;
@@ -249,8 +249,8 @@ class BaseTable
             $data['updated_at'] = date('Y-m-d H:i:s');
         }
 
-        $setClause = implode(', ', array_map(fn($col) => "$col = :$col", array_keys($data)));
-        $whereClause = implode(' AND ', array_map(fn($col) => "$col = :where_$col", array_keys($where)));
+        $setClause = implode(', ', array_map(fn($col) => "`$col` = :$col", array_keys($data)));
+        $whereClause = implode(' AND ', array_map(fn($col) => "`$col` = :where_$col", array_keys($where)));
 
         $bindings = array_merge(
             $data,
@@ -277,7 +277,7 @@ class BaseTable
     {
         $self = static::instance();
 
-        $whereClause = implode(' AND ', array_map(fn($col) => "$col = :$col", array_keys($where)));
+        $whereClause = implode(' AND ', array_map(fn($col) => "`$col` = :$col", array_keys($where)));
         $sql = "DELETE FROM {$self->table} WHERE $whereClause";
         $self->lastQuery = $sql;
         $self->lastBindings = $where;
@@ -335,12 +335,14 @@ class BaseTable
         return array_diff_key($data, array_flip($this->hidden));
     }
 
-    public function insertID(){
+    public function insertID()
+    {
         $data = $this->attributes;
         return $data['_id'] ?? null;
     }
 
-    public function _id(){
+    public function _id()
+    {
         return $this->insertID();
     }
 
