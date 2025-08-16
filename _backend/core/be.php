@@ -26,7 +26,7 @@ if (! function_exists('error_response')) {
     {
         $data['be_response'] = "error";
         header('Content-Type: application/json');
-        http_response_code($status);
+        http_response_code(getenv("error_code"));
         echo json_encode($data);
         exit;
     }
