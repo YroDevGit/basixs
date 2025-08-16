@@ -267,7 +267,7 @@ if (! function_exists("pdo")) {
             return $pdo;
         } catch (PDOException $e) {
             add_sql_log($e->getMessage(), "error");
-            error_response(["code" => getenv("500"), "status" => "PDO exception error", "message" => $e->getMessage()]);
+            error_response(["code" => getenv("error_code"), "status" => "PDO exception error", "message" => $e->getMessage()]);
         }
     }
 }
