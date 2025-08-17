@@ -18,6 +18,9 @@ class BaseTable
     protected $rowcount;
     protected $lastQuery;
     protected $lastBindings;
+    protected $totalRecords;
+    protected $totalPages;
+    protected $currentPage;
 
     protected $attributes = [];
 
@@ -120,7 +123,7 @@ class BaseTable
     }
 
 
-    public static function find(array $where)
+    public static function find(array $where, int|array $extra = null)
     {
         $conditions = $where;
         $self = static::instance();
@@ -131,19 +134,83 @@ class BaseTable
 
         $whereClause = implode(' AND ', array_map(fn($col) => "`$col` = :$col", array_keys($conditions)));
         $sql = "SELECT * FROM {$self->table} WHERE $whereClause";
+
+        $limit = null;
+        $offset = null;
+        $page = 1;
+
+        if (is_numeric($extra)) {
+            $limit = (int)$extra;
+        } elseif (is_array($extra)) {
+            if (isset($extra['limit'])) {
+                $limit = (int)$extra['limit'];
+                if (isset($extra['page'])) {
+                    $page = max(1, (int)$extra['page']);
+                    $offset = ($page - 1) * $limit;
+                }
+            }
+        }
+
+        if ($limit !== null) {
+            $sql .= " LIMIT :limit";
+            if ($offset !== null) {
+                $sql .= " OFFSET :offset";
+            }
+        }
+
         $self->lastQuery = $sql;
         $self->lastBindings = $conditions;
 
         $stmt = $self->pdo->prepare($sql);
-        $stmt->execute($conditions);
+
+        foreach ($conditions as $col => $val) {
+            $stmt->bindValue(":$col", $val);
+        }
+
+        if ($limit !== null) {
+            $stmt->bindValue(":limit", $limit, \PDO::PARAM_INT);
+            if ($offset !== null) {
+                $stmt->bindValue(":offset", $offset, \PDO::PARAM_INT);
+            }
+        }
+
+        $stmt->execute();
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         $rc = $stmt->rowCount();
         $self->rowcount = $rc;
+
+        $countSql = "SELECT COUNT(*) as cnt FROM {$self->table} WHERE $whereClause";
+        $countStmt = $self->pdo->prepare($countSql);
+        $countStmt->execute($conditions);
+        $total = (int)$countStmt->fetch(\PDO::FETCH_ASSOC)['cnt'];
+
+        $self->totalRecords = $total;
+        $self->totalPages = ($limit !== null && $limit > 0) ? (int)ceil($total / $limit) : 1;
+        $self->currentPage = $page;
+
         if ($rc == 0) {
             return null;
         }
+
         return array_map([$self, 'hydrate'], $rows);
     }
+
+    public function totalRows(): int
+    {
+        return $this->totalRecords ?? 0;
+    }
+
+    public function totalPages(): int
+    {
+        return $this->totalPages ?? 1;
+    }
+
+    public function currentPage(): int
+    {
+        return $this->currentPage ?? 1;
+    }
+
+
 
 
     public static function first(array $conditions = [])
