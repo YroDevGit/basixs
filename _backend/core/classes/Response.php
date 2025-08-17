@@ -83,7 +83,7 @@ class Response
         self::json($response);
     }
 
-    static function warning(string $message = "Warning", array $details = [])
+    static function warning(string|null $message = "Warning", array $details = [])
     {
         $response = [
             "code" => getenv("warning_code"),
@@ -93,7 +93,7 @@ class Response
         self::json($response);
     }
 
-    static function network_error(string $message = "Network error", array $details = [])
+    static function network_error(string|null $message = "Network error", array $details = [])
     {
         $response = [
             "code" => getenv("no_internet_code"),
@@ -103,7 +103,7 @@ class Response
         self::json($response);
     }
 
-    static function server_error(string $message = "Server error", array $details = [])
+    static function server_error(string|null $message = "Server error", array $details = [])
     {
         $response = [
             "code" => getenv("backend_error_code"),
@@ -113,7 +113,7 @@ class Response
         self::json($response);
     }
 
-    static function db_error(string $message = "Database error", array $details = [])
+    static function db_error(string|null $message = "Database error", array $details = [])
     {
         $response = [
             "code" => getenv("db_error_code"),
