@@ -123,7 +123,7 @@ if ($bee) {
     }
 }
 
-include_once "_frontend/config/settings.php";
+include_once "_frontend/core/config/settings.php";
 
 define("mainpage", $bconfig['mainpage'] ?? "main");
 $mainpage = mainpage;
@@ -133,9 +133,16 @@ include("_frontend/core/autoloading.php");
 
 $get = $_GET['page'] ?? $_GET['p'] ?? $_GET['fe'] ?? $_GET['frontend'] ?? false;
 $folder_to_fee = '_frontend/auto';
+$is_function = false;
 
 
 try {
+    if(! $get){
+        if($_GET['funcpage'] ?? false){
+            $get =  $_GET['funcpage'];
+            $is_function = true;
+        }
+    }
     if ($get) {
         if (strpos($get, '..') !== false || strpos($get, './') !== false) {
             die("Invalid page request! - CodeYro Basixs");
@@ -146,11 +153,21 @@ try {
         $bee = $bb[0];
         $param = isset($bb[1]) ? $bb[1] : "";
         $get = substr($bee, -4) == ".php" ? $bee : $bee . ".php";
-        if (!file_exists("_frontend/pages/$get")) {
+        $target = "_frontend/pages/$get";
+        if($is_function){
+            $target = "_frontend/functions/$get";
+        }
+        if (!file_exists($target)) {
+            if($is_function){
+                die("Function page $get not found");
+            }
             include("_frontend/errors/$page404");
             exit;
         }
-        if (!is_file("_frontend/pages/$get")) {
+        if (!is_file($target)) {
+            if($is_function){
+                die("Function page $get not found");
+            }
             include("_frontend/errors/$page404");
             exit;
         }
@@ -160,7 +177,7 @@ try {
         foreach (glob($folder_to_fee . '/*.php') as $filename) {
             include_once $filename;
         }
-        include("_frontend/pages/$get");
+        include($target);
         exit;
     } else {
         if ($get == "" || $get == null || $get == false) {

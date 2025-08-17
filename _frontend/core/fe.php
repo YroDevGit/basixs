@@ -40,8 +40,26 @@ if (! function_exists('page')) {
     }
 }
 
-if(! function_exists('back_end')){
-    function back_end(string $path = ""){
+if (! function_exists('function_page')) {
+    function function_page(string $path = "")
+    {
+        $bb = explode("?", $path);
+        $path = $bb[0];
+        $param = isset($bb[1]) ? "?" . $bb[1] : "";
+        if ($path == "" || $path == null) {
+            return rootpath . $param;
+        } else {
+            $path = substr($path, -4) == ".php" ? $path : $path . ".php";
+            return rootpath . "/?funcpage=" . $path . $param;
+        }
+    }
+}
+
+
+
+if (! function_exists('back_end')) {
+    function back_end(string $path = "")
+    {
         $bb = explode("?", $path);
         $path = $bb[0];
         $param = isset($bb[1]) ? "?" . $bb[1] : "";
@@ -141,9 +159,14 @@ if (! function_exists('href')) {
 }
 
 if (! function_exists('redirect')) {
-    function redirect(string $path = "", int $time = 0)
+    function redirect(string $path = "", string $type = "page", int $time = 0)
     {
-        header("refresh: $time; url=" . rootpath . "/?page=$path");
+        if ($type == "page") {
+            header("refresh: $time; url=" . rootpath . "/?page=$path");
+        }
+        if ($type == "func") {
+            header("refresh: $time; url=" . rootpath . "/?funcpage=$path");
+        }
     }
 }
 
@@ -239,8 +262,9 @@ if (! function_exists("array_is_multidimensional")) {
 }
 
 
-if(! function_exists("php_file")){
-    function php_file($pagename){
+if (! function_exists("php_file")) {
+    function php_file($pagename)
+    {
         $mainpage = substr($pagename, -4) == ".php" ? $pagename : $pagename . ".php";
         return $mainpage;
     }

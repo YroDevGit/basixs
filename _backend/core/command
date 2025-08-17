@@ -8,6 +8,30 @@ $arguments = $argv;
 $route = isset($arguments[1]) ? strtolower($arguments[1]) : '';
 $filename = isset($arguments[2]) ? $arguments[2] : '';
 
+if ($route == "+functionpage") {
+    $phpFile = "_frontend/functions/.gitkeep";
+    $phpContent = "";
+    if (file_exists($phpFile)) {
+        echo "❌ File already exists. Please choose a different name.\n";
+        exit(1);
+    } else {
+        $directory = dirname($phpFile);
+
+        if (!is_dir($directory)) {
+            if (!mkdir($directory, 0777, true)) {
+                die("Failed to create directories: $directory");
+            }
+        }
+        if (file_put_contents($phpFile, $phpContent) !== false) {
+            echo "✔️ functions folder created: $phpFile\n";
+            exit(0);
+        } else {
+            echo "❌ Failed to create functions folder.\n";
+            exit(1);
+        }
+    }
+}
+
 if ($route == "run") {
     include "_frontend/core/loadenv.php";
     $host = getenv("rootpath");
@@ -46,7 +70,7 @@ if ($route == "run") {
     exit;
 }
 
-if($route == "dbmigrate"){
+if ($route == "dbmigrate") {
     include "_frontend/core/loadenv.php";
 
     if ($filename == "") {
@@ -56,10 +80,11 @@ if($route == "dbmigrate"){
 
     include "_backend/core/be.php";
     include "_backend/core/classes/Migration.php";
-    
+
     $migFile = $filename;
-    if(! file_exists("_backend/core/database/$migFile.php")){
-        echo "❌ Invalid migration name\n";exit;
+    if (! file_exists("_backend/core/database/$migFile.php")) {
+        echo "❌ Invalid migration name\n";
+        exit;
     }
     include "_backend/core/database/$migFile.php";
     exit;
