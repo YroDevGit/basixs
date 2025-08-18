@@ -26,8 +26,11 @@ if (! function_exists("now")) {
 
 
 if (! function_exists('page')) {
-    function page(string $path = "")
+    function page(string $path = "?")
     {
+        if ($path === "?") {
+            return rootpath . "/?page=";
+        }
         $bb = explode("?", $path);
         $path = $bb[0];
         $param = isset($bb[1]) ? "?" . $bb[1] : "";
@@ -41,8 +44,11 @@ if (! function_exists('page')) {
 }
 
 if (! function_exists('function_page')) {
-    function function_page(string $path = "")
+    function function_page(string $path = "?")
     {
+        if ($path === "?") {
+            return rootpath . "/?funcpage=";
+        }
         $bb = explode("?", $path);
         $path = $bb[0];
         $param = isset($bb[1]) ? "?" . $bb[1] : "";
