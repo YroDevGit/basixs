@@ -989,7 +989,11 @@ if (! function_exists("set_request_method")) {
     {
         $method = $_SERVER['REQUEST_METHOD'];
         if (strtoupper($req_method) != strtoupper($method)) {
-            $errmsg = "Request method should be " . strtoupper($req_method);
+            $be = current_be();
+            $errmsg = "Request method should be " . strtoupper($req_method). "\n@ ".$be;
+            if(strtolower($env) == "prod" || strtolower($env) == "production" || strtolower($env) == "uat"){
+                $errmsg = "Request method should be " . strtoupper($req_method);
+            }
             json_response(["code" => getenv("badrequest_code"), "message" => $errmsg, "status" => "request_method_invalid"], 501);
         }
     }
