@@ -136,7 +136,7 @@ if ($route == "+dbtable") {
     }
 }
 
-if ($route == "+base") {
+if ($route == "+base" || $route == "+base_table" || $route == "+basetable") {
     if ($filename == "") {
         echo "❌ Please provide a filename for the base.\n";
         exit(1);
