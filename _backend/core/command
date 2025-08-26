@@ -157,7 +157,7 @@ if ($route == "+base" || $route == "+base_table" || $route == "+basetable") {
 
             protected \$guarded = [];
 
-            protected \$hidden = ['password'];
+            protected \$hidden = [];
 
             protected \$timestamps = false;
 
