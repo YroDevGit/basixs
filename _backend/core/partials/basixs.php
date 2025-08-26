@@ -90,7 +90,7 @@ function BasixsErrorException($e, $bee, string $errorcode = "backend_error_code"
     $type = get_class($e);
     $err = [];
     $env = getenv("environment") == null ? "dev" : getenv("environment");
-    if (strtolower($env) == "prod" || strtolower($env) == "production" || strtolower($env) == "uat") {
+    if (strtolower($env) == "uat" || strtolower($env) == "staging") {
         include "_backend/core/library/PHPErrorClass.php";
         $clearMSG = PHPErrorClass::error_message($e);
         $err = [
@@ -98,6 +98,16 @@ function BasixsErrorException($e, $bee, string $errorcode = "backend_error_code"
             "status" => "error",
             "message" => $clearMSG,
             "msg" => $message,
+            "data" => []
+        ];
+    }else if(strtolower($env) == "prod" || strtolower($env) == "production"){
+        include "_backend/core/library/PHPErrorClass.php";
+        $clearMSG = PHPErrorClass::error_message($e);
+        $err = [
+            "code" => getenv($errorcode),
+            "status" => "error",
+            "message" => "Server Error #". $hascode,
+            "msg" => $clearMSG,
             "data" => []
         ];
     } else {
@@ -114,6 +124,6 @@ function BasixsErrorException($e, $bee, string $errorcode = "backend_error_code"
             "data" => []
         ];
     }
-    add_sql_log($getMessage, "be_errors", $hascode . " " . $bee);
+    add_sql_log($getMessage, "be_errors", $hascode . " @" . $bee);
     return $err;
 }

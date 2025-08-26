@@ -272,63 +272,66 @@ if (! function_exists("pdo")) {
     }
 }
 
+
 if (! function_exists("add_sql_log")) {
-    /** (Any) returns the value of the get */
-    function add_sql_log(string $string, $type = "info", $intro = "")
+    function add_sql_log($string, string $type = "info", string $intro = "")
     {
-        $arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+        $arr = range('A', 'Z');
+        $arr = array_merge($arr, range(1, 9));
         shuffle($arr);
-        $mx = null;
+
         if (isset($_SESSION['set_sql_batch'])) {
             $mx = $_SESSION['set_sql_batch'];
         } else {
             $mx = $arr[0] . $arr[1] . $arr[2] . $arr[3] . $arr[4];
+            $_SESSION['set_sql_batch'] = $mx;
         }
 
+        $logConfig = [
+            "info"     => ["env" => "sql_logs",   "dir" => "_backend/logs/sql_logs",   "prefix" => "INFO"],
+            "error"    => ["env" => "sql_errors", "dir" => "_backend/logs/sql_errors", "prefix" => "ERROR"],
+            "query"    => ["env" => "query_logs", "dir" => "_backend/logs/query_logs", "prefix" => $intro],
+            "be_errors" => ["env" => "be_errors",  "dir" => "_backend/logs/be_errors",  "prefix" => $intro],
+        ];
 
-        if ($type == "info") {
-            if (getenv("sql_logs") == "true") {
-                $logfile = "_backend/logs/sql_logs/" . date("Y-m-d") . "sql.log"; // Path to your log file
-                $timestamp = date('Y-m-d H:i:s');
-                $logEntry = "INFO: ($mx) [$timestamp] $string\n";
-                file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
-            }
-        }
-        if ($type == "error") {
-            if (getenv("sql_errors") == "true") {
-                $logfile = "_backend/logs/sql_errors/" . date("Y-m-d") . "sql.log"; // Path to your log file
-                $timestamp = date('Y-m-d H:i:s');
-                $logEntry = "ERROR: ($mx) [$timestamp] $string\n";
-                file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
-            }
-        }
-        if ($type == "query") {
-            if (getenv("query_logs") == "true") {
-                $logfile = "_backend/logs/query_logs/" . date("Y-m-d") . "sql.log"; // Path to your log file
-                $timestamp = date('Y-m-d H:i:s');
-                $logEntry = "$intro: ($mx) [$timestamp] $string\n";
-                file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
-            }
+        if (!isset($logConfig[$type])) {
+            return false;
         }
 
-        if ($type == "be_errors") {
-            if (getenv("be_errors") == "true") {
-                $logfile = "_backend/logs/be_errors/" . date("Y-m-d") . "error.log"; // Path to your log file
-                $timestamp = date('Y-m-d H:i:s');
-                $logEntry = "$intro: ($mx) [$timestamp] $string\n";
-                file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
-            }
+        $env = $logConfig[$type]["env"];
+        $dir = $logConfig[$type]["dir"];
+        $prefix = $logConfig[$type]["prefix"];
+
+        if (getenv($env) !== "true") {
+            return false;
         }
+
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $logfile = $dir . "/" . date("Y-m-d") . ".log";
+        $timestamp = date('Y-m-d H:i:s');
+        $logEntry = "$prefix: ($mx) [$timestamp] $string\n";
+
+        file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
+        return true;
     }
 }
 
 if (! function_exists("my_log")) {
-    function my_log(string $text, string $intro = "")
+    function my_log($text, string $intro = "")
     {
-        $logfile = "_backend/logs/my_logs/" . date("Y-m-d") . "sql.log"; // Path to your log file
+        $dir = "_backend/logs/my_logs";
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $logfile = $dir . "/" . date("Y-m-d") . ".log";
         $timestamp = date('Y-m-d H:i:s');
-        $intro = $intro == "" ? "" : $intro . " ";
-        $logEntry =  $intro . "[$timestamp] $text\n";
+        $intro = $intro === "" ? "" : $intro . " ";
+        $logEntry = $intro . "[$timestamp] $text\n";
+
         file_put_contents($logfile, $logEntry, FILE_APPEND | LOCK_EX);
     }
 }
@@ -990,8 +993,8 @@ if (! function_exists("set_request_method")) {
         $method = $_SERVER['REQUEST_METHOD'];
         if (strtoupper($req_method) != strtoupper($method)) {
             $be = current_be();
-            $errmsg = "Request method should be " . strtoupper($req_method). "\n@ ".$be;
-            if(strtolower($env) == "prod" || strtolower($env) == "production" || strtolower($env) == "uat"){
+            $errmsg = "Request method should be " . strtoupper($req_method) . "\n@ " . $be;
+            if (strtolower($env) == "prod" || strtolower($env) == "production" || strtolower($env) == "uat" || strtolower($env) == "staging") {
                 $errmsg = "Request method should be " . strtoupper($req_method);
             }
             json_response(["code" => getenv("badrequest_code"), "message" => $errmsg, "status" => "request_method_invalid"], 501);
